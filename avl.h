@@ -3,11 +3,11 @@
 
 typedef struct {
     char data[20];
-    double consumo;
-    double clientes;
-    double receita_total;
-    double preco_kwh;
-    double uso_medio;
+    double demanda_residual;
+    double demanda_contratada;
+    double geracao_despachavel;
+    double geracao_termica;
+    double importacoes;
 } Registro;
 
 typedef struct Node {
@@ -18,6 +18,5 @@ typedef struct Node {
 
 Node* inserir(Node *raiz, Registro r);
 void em_ordem(Node *raiz);
-int altura(Node *n);
 
 #endif
