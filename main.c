@@ -1,3 +1,4 @@
+#include <zmq.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,5 +68,6 @@ int main() {
     printf("\nDados ordenados por data-hora:\n");
     em_ordem(raiz);
 
+    getchar();
     return 0;
 }

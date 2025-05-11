@@ -1,0 +1,25 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build Programa",
+            "type": "shell",
+            "command": "gcc",
+            "args": [
+                "main.c",
+                "AVL/avl.c",
+                "-o",
+                "programa",
+                "-IC:/Users/guilh/vcpkg/installed/x64-mingw-static/include",
+                "-LC:/Users/guilh/vcpkg/installed/x64-mingw-static/lib",
+                "-lzmq"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "problemMatcher": ["$gcc"],
+            "detail": "Compilação do programa com ZeroMQ"
+        }
+    ]
+}
