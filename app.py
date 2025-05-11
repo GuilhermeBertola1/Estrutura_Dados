@@ -4,6 +4,7 @@ aguardando uma resposta após cada uma.
 """
 import zmq
 import torch
+import statsmodels.api as sm
 
 # Verifique se o PyTorch pode acessar a GPU
 if torch.cuda.is_available():
