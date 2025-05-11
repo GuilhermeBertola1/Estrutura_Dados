@@ -1,10 +1,11 @@
+// main.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "avl.h"
+#include "AVL/avl.h"
 
 int main() {
-    FILE *f = fopen("ESK2033.csv", "r");
+    FILE *f = fopen("dataset/ESK2033.csv", "r");
     if (!f) {
         perror("Erro ao abrir o CSV");
         return 1;
@@ -13,7 +14,7 @@ int main() {
     char linha[4096];
     Node *raiz = NULL;
 
-    fgets(linha, sizeof(linha), f);
+    fgets(linha, sizeof(linha), f); // pula cabeçalho
 
     while (fgets(linha, sizeof(linha), f)) {
         Registro r;
@@ -21,6 +22,7 @@ int main() {
 
         if (!token) continue;
         strncpy(r.data, token, sizeof(r.data));
+        r.data[sizeof(r.data)-1] = '\0';
 
         for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
         if (!token) continue;
@@ -42,6 +44,22 @@ int main() {
         if (!token) continue;
         r.geracao_despachavel = atof(token);    // Dispatchable Generation
 
+        for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+        if (!token) continue;
+        r.geracao_renovavel_total = atof(token); // Total RE
+
+        for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+        if (!token) continue;
+        r.capacidade_instalada = atof(token);   // Installed Eskom Capacity
+
+        for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+        if (!token) continue;
+        r.perdas_geracao_total = atof(token);   // Total UCLF+OCLF
+
+        for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+        if (!token) continue;
+        r.carga_reduzida_manual = atof(token);  // Manual Load Reduction (MLR)
+
         raiz = inserir(raiz, r);
     }
 
@@ -50,6 +68,5 @@ int main() {
     printf("\nDados ordenados por data-hora:\n");
     em_ordem(raiz);
 
-    getchar();
     return 0;
 }

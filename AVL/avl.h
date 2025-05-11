@@ -1,3 +1,4 @@
+// avl.h
 #ifndef AVL_H
 #define AVL_H
 
@@ -8,10 +9,20 @@ typedef struct {
     double geracao_despachavel;
     double geracao_termica;
     double importacoes;
+    double geracao_renovavel_total;
+    double carga_reduzida_manual;
+    double capacidade_instalada;
+    double perdas_geracao_total;
 } Registro;
 
-typedef struct Node {
+typedef struct ListaRegistro {
     Registro info;
+    struct ListaRegistro *prox;
+} ListaRegistro;
+
+typedef struct Node {
+    char data[20];
+    ListaRegistro *registros;
     int altura;
     struct Node *esq, *dir;
 } Node;

@@ -1,3 +1,4 @@
+// avl.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,9 +12,17 @@ int max(int a, int b) {
     return (a > b) ? a : b;
 }
 
+ListaRegistro* novo_registro(Registro r) {
+    ListaRegistro *lr = malloc(sizeof(ListaRegistro));
+    lr->info = r;
+    lr->prox = NULL;
+    return lr;
+}
+
 Node *novo_no(Registro r) {
     Node *n = malloc(sizeof(Node));
-    n->info = r;
+    strncpy(n->data, r.data, sizeof(n->data));
+    n->registros = novo_registro(r);
     n->altura = 1;
     n->esq = n->dir = NULL;
     return n;
@@ -46,26 +55,32 @@ int fator_balanceamento(Node *n) {
 Node* inserir(Node *raiz, Registro r) {
     if (!raiz) return novo_no(r);
 
-    if (strcmp(r.data, raiz->info.data) < 0)
+    int cmp = strcmp(r.data, raiz->data);
+
+    if (cmp < 0)
         raiz->esq = inserir(raiz->esq, r);
-    else if (strcmp(r.data, raiz->info.data) > 0)
+    else if (cmp > 0)
         raiz->dir = inserir(raiz->dir, r);
-    else
-        return raiz; // dados repetidos
+    else {
+        ListaRegistro *novo = novo_registro(r);
+        novo->prox = raiz->registros;
+        raiz->registros = novo;
+        return raiz;
+    }
 
     raiz->altura = 1 + max(altura(raiz->esq), altura(raiz->dir));
 
     int fb = fator_balanceamento(raiz);
 
-    if (fb > 1 && strcmp(r.data, raiz->esq->info.data) < 0)
+    if (fb > 1 && strcmp(r.data, raiz->esq->data) < 0)
         return rotacao_direita(raiz);
-    if (fb < -1 && strcmp(r.data, raiz->dir->info.data) > 0)
+    if (fb < -1 && strcmp(r.data, raiz->dir->data) > 0)
         return rotacao_esquerda(raiz);
-    if (fb > 1 && strcmp(r.data, raiz->esq->info.data) > 0) {
+    if (fb > 1 && strcmp(r.data, raiz->esq->data) > 0) {
         raiz->esq = rotacao_esquerda(raiz->esq);
         return rotacao_direita(raiz);
     }
-    if (fb < -1 && strcmp(r.data, raiz->dir->info.data) < 0) {
+    if (fb < -1 && strcmp(r.data, raiz->dir->data) < 0) {
         raiz->dir = rotacao_direita(raiz->dir);
         return rotacao_esquerda(raiz);
     }
@@ -75,13 +90,23 @@ Node* inserir(Node *raiz, Registro r) {
 void em_ordem(Node *raiz) {
     if (raiz) {
         em_ordem(raiz->esq);
-        printf("%s | DR=%.2f | DC=%.2f | GD=%.2f | GT=%.2f | IMP=%.2f\n",
-               raiz->info.data,
-               raiz->info.demanda_residual,
-               raiz->info.demanda_contratada,
-               raiz->info.geracao_despachavel,
-               raiz->info.geracao_termica,
-               raiz->info.importacoes);
+
+        printf("\n%s:\n", raiz->data);
+        ListaRegistro *lr = raiz->registros;
+        while (lr) {
+            printf("  DR=%.2f | DC=%.2f | GD=%.2f | GT=%.2f | IMP=%.2f | RE=%.2f | MLR=%.2f | CAP=%.2f | UO=%.2f\n",
+                   lr->info.demanda_residual,
+                   lr->info.demanda_contratada,
+                   lr->info.geracao_despachavel,
+                   lr->info.geracao_termica,
+                   lr->info.importacoes,
+                   lr->info.geracao_renovavel_total,
+                   lr->info.carga_reduzida_manual,
+                   lr->info.capacidade_instalada,
+                   lr->info.perdas_geracao_total);
+            lr = lr->prox;
+        }
+
         em_ordem(raiz->dir);
     }
 }
