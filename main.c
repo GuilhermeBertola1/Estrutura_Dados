@@ -80,7 +80,7 @@ int main() {
         char buffer [10];
         zmq_recv (responder, buffer, 10, 0);
         printf ("Received Hello\n");
-        sleep (1);          //  Do some 'work'
+        sleep (1);
         zmq_send (responder, "World", 5, 0);
     }
 
