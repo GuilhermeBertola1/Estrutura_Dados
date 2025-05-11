@@ -8,10 +8,9 @@
             "args": [
                 "main.c",
                 "AVL/avl.c",
-                "-o",
-                "programa",
-                "-IC:/Users/guilh/vcpkg/installed/x64-mingw-static/include",
-                "-LC:/Users/guilh/vcpkg/installed/x64-mingw-static/lib",
+                "-o", "programa",
+                "-IC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/include",
+                "-LC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/lib",
                 "-lzmq"
             ],
             "group": {
