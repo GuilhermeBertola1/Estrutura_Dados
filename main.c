@@ -70,6 +70,8 @@ int main() {
     printf("\nDados ordenados por data-hora:\n");
     em_ordem(raiz);
 
+    preencher_vetor_nos(raiz);
+
     //  Socket to talk to clients
     void *context = zmq_ctx_new ();
     void *responder = zmq_socket (context, ZMQ_REP);
@@ -81,9 +83,17 @@ int main() {
         char buffer [4096];
         zmq_recv (responder, buffer, 4096, 0);
         printf ("Received Hello, %d\n", i);
-        sleep (1);
-        zmq_send (responder, raiz->data, 5, 0);
+
+        char msg[4096];
+        if (i < contador) {
+            registro_to_json_completo(vetor_nos[i], msg, sizeof(msg));
+            zmq_send(responder, msg, strlen(msg) + 1, 0);
+        } else {
+            zmq_send(responder, "FIM", 4, 0);
+        }
+
         i++;
+        sleep(1);
     }
 
     return 0;

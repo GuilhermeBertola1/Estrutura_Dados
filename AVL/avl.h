@@ -1,6 +1,8 @@
 #ifndef AVL_H
 #define AVL_H
 
+#define MAX_NODES 10000
+
 typedef struct {
     char data[20];
     double demanda_residual;
@@ -26,7 +28,12 @@ typedef struct Node {
     struct Node *esq, *dir;
 } Node;
 
+extern Node* vetor_nos[MAX_NODES];
+extern int contador;
+
 Node* inserir(Node *raiz, Registro r);
 void em_ordem(Node *raiz);
+void preencher_vetor_nos(Node *raiz);
+void registro_to_json_completo(Node *no, char *buffer, size_t size);
 
 #endif

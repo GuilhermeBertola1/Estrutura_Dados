@@ -3,6 +3,9 @@
 #include <string.h>
 #include "avl.h"
 
+Node* vetor_nos[MAX_NODES];
+int contador = 0;
+
 int altura(Node *n) {
     return n ? n->altura : 0;
 }
@@ -108,4 +111,46 @@ void em_ordem(Node *raiz) {
 
         em_ordem(raiz->dir);
     }
+}
+
+void preencher_vetor_nos(Node *raiz) {
+    if (!raiz) return;
+    preencher_vetor_nos(raiz->esq);
+    if (contador < MAX_NODES) {
+        vetor_nos[contador++] = raiz;
+    }
+    preencher_vetor_nos(raiz->dir);
+}
+
+void registro_to_json_completo(Node *no, char *buffer, size_t size) {
+    if (!no || !no->registros) {
+        snprintf(buffer, size, "{\n  \"erro\": \"nó ou registro vazio\"\n}");
+        return;
+    }
+
+    Registro *r = &(no->registros->info);
+    snprintf(buffer, size,
+        "{\n"
+        "  \"data\": \"%s\",\n"
+        "  \"demanda_residual\": %.2f,\n"
+        "  \"demanda_contratada\": %.2f,\n"
+        "  \"geracao_despachavel\": %.2f,\n"
+        "  \"geracao_termica\": %.2f,\n"
+        "  \"importacoes\": %.2f,\n"
+        "  \"geracao_renovavel_total\": %.2f,\n"
+        "  \"carga_reduzida_manual\": %.2f,\n"
+        "  \"capacidade_instalada\": %.2f,\n"
+        "  \"perdas_geracao_total\": %.2f\n"
+        "}",
+        no->data,
+        r->demanda_residual,
+        r->demanda_contratada,
+        r->geracao_despachavel,
+        r->geracao_termica,
+        r->importacoes,
+        r->geracao_renovavel_total,
+        r->carga_reduzida_manual,
+        r->capacidade_instalada,
+        r->perdas_geracao_total
+    );
 }
