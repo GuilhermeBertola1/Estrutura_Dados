@@ -87,7 +87,7 @@ int main() {
         char msg[4096];
         if (i < contador) {
             registro_to_json_completo(vetor_nos[i], msg, sizeof(msg));
-            zmq_send(responder, msg, strlen(msg) + 1, 0);
+            zmq_send(responder, msg, strlen(msg), 0);
         } else {
             zmq_send(responder, "FIM", 4, 0);
         }
