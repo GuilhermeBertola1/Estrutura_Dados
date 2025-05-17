@@ -1,30 +1,35 @@
-"""
-Este é um cliente ZeroMQ que se conecta a um servidor e envia 4300 solicitações,
-aguardando uma resposta após cada uma.
-"""
 import zmq
 import torch
-import statsmodels.api as sm
+import streamlit as st
 
-# Verifique se o PyTorch pode acessar a GPU
+# Título
+st.title("🛰️ Cliente ZeroMQ com PyTorch")
+
+# GPU ou CPU
 if torch.cuda.is_available():
-    print("CUDA está disponível. Usando GPU:")
-    print(f"Nome da GPU: {torch.cuda.get_device_name(0)}")
-    print(f"Memória total da GPU: {torch.cuda.get_device_properties(0).total_memory / (1024 ** 3):.2f} GB")
+    st.success("CUDA está disponível ✅")
+    st.write(f"Nome da GPU: {torch.cuda.get_device_name(0)}")
+    st.write(f"Memória total: {torch.cuda.get_device_properties(0).total_memory / (1024 ** 3):.2f} GB")
 else:
-    print("CUDA não está disponível. Usando CPU.")
+    st.warning("CUDA não disponível. Usando CPU.")
 
-#zeroMQ
-context = zmq.Context()
+# Número de requisições
+num_reqs = st.number_input("Número de requisições a enviar", min_value=1, max_value=10000, value=10)
 
-print("Connecting to hello world server…")
-socket = context.socket(zmq.REQ)
-socket.connect("tcp://localhost:5555")
+# Botão para enviar requisições
+if st.button("Enviar requisições"):
+    st.write("🔌 Conectando ao servidor ZeroMQ...")
 
-for request in range(4300):
-    print(f"Sending request {request} …")
-    socket.send(b"Hello")
+    context = zmq.Context()
+    socket = context.socket(zmq.REQ)
+    socket.connect("tcp://localhost:5555")
+    progresso = st.progress(0)
+    mensagens = st.empty()
 
-    #  Get the reply.
-    message = socket.recv()
-    print(f"Received reply {request} [ {message} ]")
+    for i in range(num_reqs):
+        socket.send(b"Hello")
+        reply = socket.recv()
+        mensagens.text(f"📨 [{i+1}] Resposta recebida: {reply.decode()}")
+        progresso.progress((i + 1) / num_reqs)
+
+    st.success("✅ Todas as requisições foram enviadas e respostas recebidas.")
