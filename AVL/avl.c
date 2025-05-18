@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 #include "avl.h"
 
 Node* vetor_nos[MAX_NODES];
@@ -153,4 +153,82 @@ void registro_to_json_completo(Node *no, char *buffer, size_t size) {
         r->capacidade_instalada,
         r->perdas_geracao_total
     );
+}
+
+void buscar_intervalo(Node *raiz, const char *data_inicio, const char *data_fim, char *buffer, size_t size) {
+    if (!raiz) {
+        snprintf(buffer, size, "[]");
+        return;
+    }
+
+    char resultado[65536];
+    resultado[0] = '[';  // abre o array JSON
+    resultado[1] = '\0';
+
+    int primeiro = 1;
+
+    void coletar(Node *no) {
+        if (!no) return;
+
+        // Se data do nó for maior que data_inicio, explore esquerda
+        if (strcmp(no->data, data_inicio) > 0)
+            coletar(no->esq);
+
+        // Se data do nó estiver dentro do intervalo, processa registros
+        if (strcmp(no->data, data_inicio) >= 0 && strcmp(no->data, data_fim) <= 0) {
+            ListaRegistro *lr = no->registros;
+            while (lr) {
+                char item[2048];
+
+                int n = snprintf(item, sizeof(item),
+                    "%s{\n"
+                    "  \"data\": \"%s\",\n"
+                    "  \"demanda_residual\": %.2f,\n"
+                    "  \"demanda_contratada\": %.2f,\n"
+                    "  \"geracao_despachavel\": %.2f,\n"
+                    "  \"geracao_termica\": %.2f,\n"
+                    "  \"importacoes\": %.2f,\n"
+                    "  \"geracao_renovavel_total\": %.2f,\n"
+                    "  \"carga_reduzida_manual\": %.2f,\n"
+                    "  \"capacidade_instalada\": %.2f,\n"
+                    "  \"perdas_geracao_total\": %.2f\n"
+                    "}",
+                    primeiro ? "" : ",\n",
+                    lr->info.data,
+                    lr->info.demanda_residual,
+                    lr->info.demanda_contratada,
+                    lr->info.geracao_despachavel,
+                    lr->info.geracao_termica,
+                    lr->info.importacoes,
+                    lr->info.geracao_renovavel_total,
+                    lr->info.carga_reduzida_manual,
+                    lr->info.capacidade_instalada,
+                    lr->info.perdas_geracao_total
+                );
+
+                // Confere se cabe no buffer resultado antes de concatenar
+                if (strlen(resultado) + n < sizeof(resultado)) {
+                    strcat(resultado, item);
+                    primeiro = 0;
+                } else {
+                    // Não cabe mais, para para evitar overflow
+                    return;
+                }
+
+                lr = lr->prox;
+            }
+        }
+
+        // Se data do nó for menor que data_fim, explore direita
+        if (strcmp(no->data, data_fim) < 0)
+            coletar(no->dir);
+    }
+
+    coletar(raiz);
+
+    strcat(resultado, "]"); // fecha array JSON
+
+    // Copia resultado para buffer de saída respeitando o tamanho size
+    strncpy(buffer, resultado, size - 1);
+    buffer[size - 1] = '\0';
 }

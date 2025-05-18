@@ -80,20 +80,20 @@ int main() {
 
     int i = 0;
     while (1) {
-        char buffer [4096];
-        zmq_recv (responder, buffer, 4096, 0);
-        printf ("Received Hello, %d\n", i);
+        char buffer[4096];
+        int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+        if (bytes == -1) break;
+        buffer[bytes] = '\0';
 
-        char msg[4096];
-        if (i < contador) {
-            registro_to_json_completo(vetor_nos[i], msg, sizeof(msg));
-            zmq_send(responder, msg, strlen(msg), 0);
+        char data_inicio[20], data_fim[20];
+        if (sscanf(buffer, "%19[^,],%19s", data_inicio, data_fim) == 2) {
+            char resposta[65536]; // buffer grande para JSON
+            buscar_intervalo(raiz, data_inicio, data_fim, resposta, sizeof(resposta));
+            zmq_send(responder, resposta, strlen(resposta), 0);
         } else {
-            zmq_send(responder, "FIM", 4, 0);
+            const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+            zmq_send(responder, msg_erro, strlen(msg_erro), 0);
         }
-
-        i++;
-        sleep(1);
     }
 
     return 0;

@@ -4,48 +4,45 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-st.title("📊 Interface Grafica")
+st.title("📊 Interface Gráfica - Cliente ZeroMQ")
 
 if "dados" not in st.session_state:
     st.session_state["dados"] = []
 
-num_reqs = st.number_input("Número de requisições a enviar", min_value=1, max_value=10000, value=10)
+data_inicio = st.date_input("📅 Data de início")
+data_fim = st.date_input("📅 Data de fim")
 
-# Botão para buscar dados do servidor
-if st.button("Requesicao dos dados do servidor"):
+if data_inicio > data_fim:
+    st.warning("⚠️ A data de início deve ser anterior à data de fim.")
+
+if st.button("🔄 Requisitar dados por intervalo de datas"):
     st.write("🔌 Conectando ao servidor ZeroMQ...")
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5555")
 
-    progresso = st.progress(0)
-    dados = []
-
-    for i in range(num_reqs):
-        socket.send(b"Hello")
-        resposta = socket.recv().decode(errors="ignore").strip().rstrip('\x00')
-
-        try:
-            json_data = json.loads(resposta)
-            dados.append(json_data)
-        except json.JSONDecodeError:
-            st.error(f"Erro ao decodificar JSON: {resposta}")
-
-        progresso.progress((i + 1) / num_reqs)
+    msg = f"{data_inicio.strftime('%Y-%m-%d')},{data_fim.strftime('%Y-%m-%d')}"
+    socket.send_string(msg)
+    
+    resposta = socket.recv().decode()
+    try:
+        dados = json.loads(resposta)
+        if isinstance(dados, list):
+            st.session_state["dados"].extend(dados)
+            st.success("✅ Dados recebidos com sucesso.")
+        else:
+            st.error("❌ Formato de resposta inválido.")
+    except json.JSONDecodeError:
+        st.error(f"❌ Erro ao decodificar JSON: {resposta}")
 
     socket.close()
     context.term()
 
-    # Salva os dados na sessão para não perder ao interagir
-    st.session_state["dados"].extend(dados)
-    st.success("✅ Dados recebidos e salvos com sucesso.")
-
-# Só continua se já tiver dados salvos
-if "dados" in st.session_state and st.session_state["dados"]:
+if st.session_state["dados"]:
     df = pd.DataFrame(st.session_state["dados"])
-    df["data"] = pd.to_datetime(df["data"])  # garante tipo datetime
+    df["data"] = pd.to_datetime(df["data"])
 
-    st.write("📅 Visualização dos dados recebidos:")
+    st.write("🧾 Dados Recebidos:")
     st.dataframe(df)
 
     colunas = [
@@ -60,7 +57,7 @@ if "dados" in st.session_state and st.session_state["dados"]:
         "perdas_geracao_total"
     ]
 
-    escolha = st.selectbox("Escolha a variável para o gráfico:", colunas)
+    escolha = st.selectbox("📈 Escolha a variável para o gráfico:", colunas)
 
     grafico = alt.Chart(df).mark_line(point=True).encode(
         x="data:T",
