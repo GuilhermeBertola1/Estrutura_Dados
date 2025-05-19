@@ -23,44 +23,47 @@ int main() {
         char *token = strtok(linha, ",");
 
         if (!token) continue;
+
+        // Copia data direto (esperando formato com AM/PM)
         strncpy(r.data, token, sizeof(r.data));
         r.data[sizeof(r.data)-1] = '\0';
 
+        // Avança tokens e lê os campos que quer
         for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.demanda_residual = atof(token);       // Residual Demand
+        r.demanda_residual = atof(token);
 
         token = strtok(NULL, ",");
         if (!token) continue;
-        r.demanda_contratada = atof(token);     // RSA Contracted Demand
+        r.demanda_contratada = atof(token);
 
         token = strtok(NULL, ",");
         if (!token) continue;
-        r.importacoes = atof(token);            // International Imports
+        r.importacoes = atof(token);
 
         for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.geracao_termica = atof(token);        // Thermal Generation
+        r.geracao_termica = atof(token);
 
         for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.geracao_despachavel = atof(token);    // Dispatchable Generation
+        r.geracao_despachavel = atof(token);
 
         for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.geracao_renovavel_total = atof(token); // Total RE
+        r.geracao_renovavel_total = atof(token);
 
         for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.capacidade_instalada = atof(token);   // Installed Eskom Capacity
+        r.capacidade_instalada = atof(token);
 
         for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.perdas_geracao_total = atof(token);   // Total UCLF+OCLF
+        r.perdas_geracao_total = atof(token);
 
         for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
         if (!token) continue;
-        r.carga_reduzida_manual = atof(token);  // Manual Load Reduction (MLR)
+        r.carga_reduzida_manual = atof(token);
 
         raiz = inserir(raiz, r);
     }
@@ -68,33 +71,37 @@ int main() {
     fclose(f);
 
     printf("\nDados ordenados por data-hora:\n");
-    em_ordem(raiz);
+    imprimir_AVL(raiz);
 
-    preencher_vetor_nos(raiz);
-
-    //  Socket to talk to clients
+    // Inicializa socket ZeroMQ
     void *context = zmq_ctx_new ();
     void *responder = zmq_socket (context, ZMQ_REP);
     int rc = zmq_bind (responder, "tcp://*:5555");
     assert (rc == 0);
 
-    int i = 0;
     while (1) {
         char buffer[4096];
         int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
         if (bytes == -1) break;
         buffer[bytes] = '\0';
+        buffer[strcspn(buffer, "\r\n")] = 0;
 
-        char data_inicio[20], data_fim[20];
-        if (sscanf(buffer, "%19[^,],%19s", data_inicio, data_fim) == 2) {
-            char resposta[65536]; // buffer grande para JSON
-            buscar_intervalo(raiz, data_inicio, data_fim, resposta, sizeof(resposta));
-            zmq_send(responder, resposta, strlen(resposta), 0);
+        char data_inicio[32], data_fim[32];
+        if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+            char *resposta_json;
+            printf(data_inicio);
+            printf(data_fim);
+            buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+            zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+            free(resposta_json);
         } else {
             const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
             zmq_send(responder, msg_erro, strlen(msg_erro), 0);
         }
     }
+
+    zmq_close(responder);
+    zmq_ctx_term(context);
 
     return 0;
 }

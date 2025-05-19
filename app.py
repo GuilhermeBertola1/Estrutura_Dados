@@ -3,27 +3,56 @@ import json
 import streamlit as st
 import pandas as pd
 import altair as alt
+import datetime
 
 st.title("📊 Interface Gráfica - Cliente ZeroMQ")
 
 if "dados" not in st.session_state:
     st.session_state["dados"] = []
 
+# Datas de início e fim
 data_inicio = st.date_input("📅 Data de início")
 data_fim = st.date_input("📅 Data de fim")
 
-if data_inicio > data_fim:
-    st.warning("⚠️ A data de início deve ser anterior à data de fim.")
+# Opções de hora (inteiras, com AM/PM)
+horas_opcoes = []
+for h in range(24):
+    hora_12 = h % 12
+    if hora_12 == 0:
+        hora_12 = 12
+    sufixo = "AM" if h < 12 else "PM"
+    horas_opcoes.append(f"{hora_12:02d}:00:00 {sufixo}")
 
-if st.button("🔄 Requisitar dados por intervalo de datas"):
+hora_inicio_str = st.selectbox("🕒 Hora de início (AM/PM)", horas_opcoes, index=0)
+hora_fim_str = st.selectbox("🕓 Hora de fim (AM/PM)", horas_opcoes, index=11)
+
+# Combina data + hora (em string)
+data_hora_inicio_str = f"{data_inicio.strftime('%Y-%m-%d')} {hora_inicio_str}"
+data_hora_fim_str = f"{data_fim.strftime('%Y-%m-%d')} {hora_fim_str}"
+
+# Converte para datetime para validar
+try:
+    data_hora_inicio = datetime.datetime.strptime(data_hora_inicio_str, "%Y-%m-%d %I:%M:%S %p")
+    data_hora_fim = datetime.datetime.strptime(data_hora_fim_str, "%Y-%m-%d %I:%M:%S %p")
+except ValueError:
+    st.error("❌ Erro ao converter data e hora.")
+    data_hora_inicio = data_hora_fim = None
+
+if data_hora_inicio and data_hora_fim and data_hora_inicio > data_hora_fim:
+    st.warning("⚠️ A data e hora de início devem ser anteriores à data e hora de fim.")
+
+if st.button("🔄 Requisitar dados por intervalo"):
     st.write("🔌 Conectando ao servidor ZeroMQ...")
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:5555")
 
-    msg = f"{data_inicio.strftime('%Y-%m-%d')},{data_fim.strftime('%Y-%m-%d')}"
+    # Envia as strings formatadas no formato exato
+    msg = f"{data_hora_inicio.strftime('%Y-%m-%d %I:00:00 %p')},{data_hora_fim.strftime('%Y-%m-%d %I:00:00 %p')}"
+    print(msg)
+    st.write(f"📨 Enviando: {msg}")
     socket.send_string(msg)
-    
+
     resposta = socket.recv().decode()
     try:
         dados = json.loads(resposta)
@@ -38,6 +67,7 @@ if st.button("🔄 Requisitar dados por intervalo de datas"):
     socket.close()
     context.term()
 
+# Exibição dos dados e gráfico
 if st.session_state["dados"]:
     df = pd.DataFrame(st.session_state["dados"])
     df["data"] = pd.to_datetime(df["data"])

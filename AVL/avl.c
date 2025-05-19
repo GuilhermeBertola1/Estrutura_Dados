@@ -89,9 +89,9 @@ Node* inserir(Node *raiz, Registro r) {
     return raiz;
 }
 
-void em_ordem(Node *raiz) {
+void imprimir_AVL(Node *raiz) {
     if (raiz) {
-        em_ordem(raiz->esq);
+        imprimir_AVL(raiz->esq);
 
         printf("\n%s:\n", raiz->data);
         ListaRegistro *lr = raiz->registros;
@@ -109,126 +109,128 @@ void em_ordem(Node *raiz) {
             lr = lr->prox;
         }
 
-        em_ordem(raiz->dir);
+        imprimir_AVL(raiz->dir);
     }
 }
 
-void preencher_vetor_nos(Node *raiz) {
-    if (!raiz) return;
-    preencher_vetor_nos(raiz->esq);
-    if (contador < MAX_NODES) {
-        vetor_nos[contador++] = raiz;
+long long datetime_para_inteiro(const char *datetime) {
+    int ano, mes, dia, hora, min, seg;
+    char ampm[3] = "";
+
+    // Verifica se tem AM/PM no final
+    if (strstr(datetime, "AM") || strstr(datetime, "PM") || strstr(datetime, "am") || strstr(datetime, "pm")) {
+        sscanf(datetime, "%d-%d-%d %d:%d:%d %2s", &ano, &mes, &dia, &hora, &min, &seg, ampm);
+
+        if ((strcmp(ampm, "PM") == 0 || strcmp(ampm, "pm") == 0) && hora != 12)
+            hora += 12;
+        else if ((strcmp(ampm, "AM") == 0 || strcmp(ampm, "am") == 0) && hora == 12)
+            hora = 0;
+    } else {
+        sscanf(datetime, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
     }
-    preencher_vetor_nos(raiz->dir);
+
+    return (long long)ano * 10000000000LL +
+           (long long)mes * 100000000 +
+           (long long)dia * 1000000 +
+           (long long)hora * 10000 +
+           (long long)min * 100 +
+           (long long)seg;
 }
 
-void registro_to_json_completo(Node *no, char *buffer, size_t size) {
-    if (!no || !no->registros) {
-        snprintf(buffer, size, "{\n  \"erro\": \"nó ou registro vazio\"\n}");
-        return;
+// Função recursiva para coletar registros entre data_inicio e data_fim, montando JSON no buffer
+static void buscar_intervalo_rec(Node *no, long long inicio, long long fim,
+                                 char **resultado, size_t *tamanho, size_t *usado, int *primeiro) {
+    if (!no) return;
+
+    long long data_no = datetime_para_inteiro(no->data);
+
+    if (data_no > inicio)
+        buscar_intervalo_rec(no->esq, inicio, fim, resultado, tamanho, usado, primeiro);
+
+    if (data_no >= inicio && data_no <= fim) {
+        ListaRegistro *lr = no->registros;
+        while (lr) {
+            char item[2048];
+            int n = snprintf(item, sizeof(item),
+                "%s{\n"
+                "  \"data\": \"%s\",\n"
+                "  \"demanda_residual\": %.2f,\n"
+                "  \"demanda_contratada\": %.2f,\n"
+                "  \"geracao_despachavel\": %.2f,\n"
+                "  \"geracao_termica\": %.2f,\n"
+                "  \"importacoes\": %.2f,\n"
+                "  \"geracao_renovavel_total\": %.2f,\n"
+                "  \"carga_reduzida_manual\": %.2f,\n"
+                "  \"capacidade_instalada\": %.2f,\n"
+                "  \"perdas_geracao_total\": %.2f\n"
+                "}",
+                (*primeiro) ? "" : ",\n",
+                lr->info.data,
+                lr->info.demanda_residual,
+                lr->info.demanda_contratada,
+                lr->info.geracao_despachavel,
+                lr->info.geracao_termica,
+                lr->info.importacoes,
+                lr->info.geracao_renovavel_total,
+                lr->info.carga_reduzida_manual,
+                lr->info.capacidade_instalada,
+                lr->info.perdas_geracao_total
+            );
+
+            if (*usado + n + 1 >= *tamanho) {
+                *tamanho *= 2;
+                *resultado = realloc(*resultado, *tamanho);
+                if (!*resultado) {
+                    perror("realloc");
+                    exit(1);
+                }
+            }
+
+            memcpy(*resultado + *usado, item, n);
+            *usado += n;
+            (*resultado)[*usado] = '\0';
+            *primeiro = 0;
+
+            lr = lr->prox;
+        }
     }
 
-    Registro *r = &(no->registros->info);
-    snprintf(buffer, size,
-        "{\n"
-        "  \"data\": \"%s\",\n"
-        "  \"demanda_residual\": %.2f,\n"
-        "  \"demanda_contratada\": %.2f,\n"
-        "  \"geracao_despachavel\": %.2f,\n"
-        "  \"geracao_termica\": %.2f,\n"
-        "  \"importacoes\": %.2f,\n"
-        "  \"geracao_renovavel_total\": %.2f,\n"
-        "  \"carga_reduzida_manual\": %.2f,\n"
-        "  \"capacidade_instalada\": %.2f,\n"
-        "  \"perdas_geracao_total\": %.2f\n"
-        "}",
-        no->data,
-        r->demanda_residual,
-        r->demanda_contratada,
-        r->geracao_despachavel,
-        r->geracao_termica,
-        r->importacoes,
-        r->geracao_renovavel_total,
-        r->carga_reduzida_manual,
-        r->capacidade_instalada,
-        r->perdas_geracao_total
-    );
+    if (data_no < fim)
+        buscar_intervalo_rec(no->dir, inicio, fim, resultado, tamanho, usado, primeiro);
 }
 
-void buscar_intervalo(Node *raiz, const char *data_inicio, const char *data_fim, char *buffer, size_t size) {
+void buscar_intervalo(Node *raiz, const char *data_inicio, const char *data_fim, char **saida) {
     if (!raiz) {
-        snprintf(buffer, size, "[]");
+        *saida = strdup("[]");
         return;
     }
 
-    char resultado[65536];
-    resultado[0] = '[';  // abre o array JSON
-    resultado[1] = '\0';
-
+    long long inicio = datetime_para_inteiro(data_inicio);
+    long long fim = datetime_para_inteiro(data_fim);
     int primeiro = 1;
 
-    void coletar(Node *no) {
-        if (!no) return;
-
-        // Se data do nó for maior que data_inicio, explore esquerda
-        if (strcmp(no->data, data_inicio) > 0)
-            coletar(no->esq);
-
-        // Se data do nó estiver dentro do intervalo, processa registros
-        if (strcmp(no->data, data_inicio) >= 0 && strcmp(no->data, data_fim) <= 0) {
-            ListaRegistro *lr = no->registros;
-            while (lr) {
-                char item[2048];
-
-                int n = snprintf(item, sizeof(item),
-                    "%s{\n"
-                    "  \"data\": \"%s\",\n"
-                    "  \"demanda_residual\": %.2f,\n"
-                    "  \"demanda_contratada\": %.2f,\n"
-                    "  \"geracao_despachavel\": %.2f,\n"
-                    "  \"geracao_termica\": %.2f,\n"
-                    "  \"importacoes\": %.2f,\n"
-                    "  \"geracao_renovavel_total\": %.2f,\n"
-                    "  \"carga_reduzida_manual\": %.2f,\n"
-                    "  \"capacidade_instalada\": %.2f,\n"
-                    "  \"perdas_geracao_total\": %.2f\n"
-                    "}",
-                    primeiro ? "" : ",\n",
-                    lr->info.data,
-                    lr->info.demanda_residual,
-                    lr->info.demanda_contratada,
-                    lr->info.geracao_despachavel,
-                    lr->info.geracao_termica,
-                    lr->info.importacoes,
-                    lr->info.geracao_renovavel_total,
-                    lr->info.carga_reduzida_manual,
-                    lr->info.capacidade_instalada,
-                    lr->info.perdas_geracao_total
-                );
-
-                // Confere se cabe no buffer resultado antes de concatenar
-                if (strlen(resultado) + n < sizeof(resultado)) {
-                    strcat(resultado, item);
-                    primeiro = 0;
-                } else {
-                    // Não cabe mais, para para evitar overflow
-                    return;
-                }
-
-                lr = lr->prox;
-            }
-        }
-
-        // Se data do nó for menor que data_fim, explore direita
-        if (strcmp(no->data, data_fim) < 0)
-            coletar(no->dir);
+    size_t capacidade = 8192;
+    size_t usado = 0;
+    char *tmp_buffer = malloc(capacidade);
+    if (!tmp_buffer) {
+        perror("malloc");
+        exit(1);
     }
 
-    coletar(raiz);
+    usado = snprintf(tmp_buffer, capacidade, "[");
+    buscar_intervalo_rec(raiz, inicio, fim, &tmp_buffer, &capacidade, &usado, &primeiro);
 
-    strcat(resultado, "]"); // fecha array JSON
+    if (usado + 2 >= capacidade) {
+        capacidade += 2;
+        tmp_buffer = realloc(tmp_buffer, capacidade);
+        if (!tmp_buffer) {
+            perror("realloc");
+            exit(1);
+        }
+    }
 
-    // Copia resultado para buffer de saída respeitando o tamanho size
-    strncpy(buffer, resultado, size - 1);
-    buffer[size - 1] = '\0';
+    tmp_buffer[usado++] = ']';
+    tmp_buffer[usado] = '\0';
+
+    *saida = tmp_buffer; // Retorna ponteiro para o buffer alocado
 }
