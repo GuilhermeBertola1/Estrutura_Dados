@@ -13,95 +13,297 @@ int main() {
         return 1;
     }
 
-    char linha[4096];
-    Node *raiz = NULL;
+    const char *red = "\033[0;31m";
+    const char *green = "\033[0;32m";
+    const char *yellow = "\033[0;33m";
+    const char *blue = "\033[0;34m";
+    const char *cyan = "\033[0;36m";
+    const char *reset = "\033[0m";
 
-    fgets(linha, sizeof(linha), f); // pula cabeçalho
+    printf("%s===============================%s\n", cyan, reset);
+    printf("%s      Selecione a estrutura   %s\n", green, reset);
+    printf("%s===============================%s\n", cyan, reset);
 
-    while (fgets(linha, sizeof(linha), f)) {
-        Registro r;
-        char *token = strtok(linha, ",");
+    printf("%s[1]%s AVL\n", yellow, reset);
+    printf("%s[2]%s Lista Encadeada\n", yellow, reset);
+    printf("%s[3]%s Tabela Hash\n", yellow, reset);
+    printf("%s[4]%s Cuckoo Hashing\n", yellow, reset);
+    printf("%s[5]%s Trie\n", yellow, reset);
+    printf("%s[6]%s Dataframe\n", yellow, reset);
 
-        if (!token) continue;
+    printf("\n%sDigite a opcao desejada:%s ", blue, reset);
 
-        // Copia data direto (esperando formato com AM/PM)
-        strncpy(r.data, token, sizeof(r.data));
-        r.data[sizeof(r.data)-1] = '\0';
+    int opcao = 0;
+    scanf("%d", &opcao);
 
-        // Avança tokens e lê os campos que quer
-        for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.demanda_residual = atof(token);
+    printf("Você escolheu a opcao %d\n", opcao);
 
-        token = strtok(NULL, ",");
-        if (!token) continue;
-        r.demanda_contratada = atof(token);
+    switch (opcao){
+    case 1:
+        
+        char linha[4096];
+        Node *raiz = NULL;
 
-        token = strtok(NULL, ",");
-        if (!token) continue;
-        r.importacoes = atof(token);
+        fgets(linha, sizeof(linha), f); // pula cabeçalho
 
-        for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.geracao_termica = atof(token);
+        while (fgets(linha, sizeof(linha), f)) {
+            Registro r;
+            char *token = strtok(linha, ",");
 
-        for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.geracao_despachavel = atof(token);
+            if (!token) continue;
 
-        for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.geracao_renovavel_total = atof(token);
+            // Copia data direto (esperando formato com AM/PM)
+            strncpy(r.data, token, sizeof(r.data));
+            r.data[sizeof(r.data)-1] = '\0';
 
-        for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.capacidade_instalada = atof(token);
+            // Avança tokens e lê os campos que quer
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.demanda_residual = atof(token);
 
-        for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.perdas_geracao_total = atof(token);
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            r.demanda_contratada = atof(token);
 
-        for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
-        if (!token) continue;
-        r.carga_reduzida_manual = atof(token);
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            r.importacoes = atof(token);
 
-        raiz = inserir(raiz, r);
-    }
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.geracao_termica = atof(token);
 
-    fclose(f);
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.geracao_despachavel = atof(token);
 
-    printf("\nDados ordenados por data-hora:\n");
-    imprimir_AVL(raiz);
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.geracao_renovavel_total = atof(token);
 
-    // Inicializa socket ZeroMQ
-    void *context = zmq_ctx_new ();
-    void *responder = zmq_socket (context, ZMQ_REP);
-    int rc = zmq_bind (responder, "tcp://*:5555");
-    assert (rc == 0);
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.capacidade_instalada = atof(token);
 
-    while (1) {
-        char buffer[4096];
-        int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
-        if (bytes == -1) break;
-        buffer[bytes] = '\0';
-        buffer[strcspn(buffer, "\r\n")] = 0;
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.perdas_geracao_total = atof(token);
 
-        char data_inicio[32], data_fim[32];
-        if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
-            char *resposta_json;
-            printf(data_inicio);
-            printf(data_fim);
-            buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
-            zmq_send(responder, resposta_json, strlen(resposta_json), 0);
-            free(resposta_json);
-        } else {
-            const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
-            zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r.carga_reduzida_manual = atof(token);
+
+            raiz = inserir(raiz, r);
         }
+
+        fclose(f);
+
+        printf("\nDados ordenados por data-hora:\n");
+        imprimir_AVL(raiz);
+
+        // Inicializa socket ZeroMQ
+        void *context = zmq_ctx_new ();
+        void *responder = zmq_socket (context, ZMQ_REP);
+        int rc = zmq_bind (responder, "tcp://*:5555");
+        assert (rc == 0);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+
+        break;
+    case 2:
+
+        
+        
+        // Inicializa socket ZeroMQ
+        void *context = zmq_ctx_new ();
+        void *responder = zmq_socket (context, ZMQ_REP);
+        int rc = zmq_bind (responder, "tcp://*:5555");
+        assert (rc == 0);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+        break;
+    case 3:
+
+
+
+        // Inicializa socket ZeroMQ
+        void *context = zmq_ctx_new ();
+        void *responder = zmq_socket (context, ZMQ_REP);
+        int rc = zmq_bind (responder, "tcp://*:5555");
+        assert (rc == 0);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+        break;
+    case 4:
+
+
+
+        // Inicializa socket ZeroMQ
+        void *context = zmq_ctx_new ();
+        void *responder = zmq_socket (context, ZMQ_REP);
+        int rc = zmq_bind (responder, "tcp://*:5555");
+        assert (rc == 0);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+        break;
+    case 5:
+
+
+
+        // Inicializa socket ZeroMQ
+        void *context = zmq_ctx_new ();
+        void *responder = zmq_socket (context, ZMQ_REP);
+        int rc = zmq_bind (responder, "tcp://*:5555");
+        assert (rc == 0);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+        break;
+    case 6:
+
+
+
+        // Inicializa socket ZeroMQ
+        void *context = zmq_ctx_new ();
+        void *responder = zmq_socket (context, ZMQ_REP);
+        int rc = zmq_bind (responder, "tcp://*:5555");
+        assert (rc == 0);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+        break;
+    default:
+        break;
     }
-
-    zmq_close(responder);
-    zmq_ctx_term(context);
-
     return 0;
 }
