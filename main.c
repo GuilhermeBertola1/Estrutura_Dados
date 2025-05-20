@@ -13,6 +13,11 @@ int main() {
         return 1;
     }
 
+    void *context = zmq_ctx_new ();
+    void *responder = zmq_socket (context, ZMQ_REP);
+    int rc = zmq_bind (responder, "tcp://*:5555");
+    assert (rc == 0);
+
     const char *red = "\033[0;31m";
     const char *green = "\033[0;32m";
     const char *yellow = "\033[0;33m";
@@ -102,11 +107,6 @@ int main() {
         imprimir_AVL(raiz);
 
         // Inicializa socket ZeroMQ
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_REP);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
-
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
@@ -137,11 +137,6 @@ int main() {
         
         
         // Inicializa socket ZeroMQ
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_REP);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
-
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
@@ -171,11 +166,6 @@ int main() {
 
 
         // Inicializa socket ZeroMQ
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_REP);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
-
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
@@ -205,11 +195,6 @@ int main() {
 
 
         // Inicializa socket ZeroMQ
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_REP);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
-
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
@@ -239,11 +224,6 @@ int main() {
 
 
         // Inicializa socket ZeroMQ
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_REP);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
-
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
@@ -273,11 +253,6 @@ int main() {
 
 
         // Inicializa socket ZeroMQ
-        void *context = zmq_ctx_new ();
-        void *responder = zmq_socket (context, ZMQ_REP);
-        int rc = zmq_bind (responder, "tcp://*:5555");
-        assert (rc == 0);
-
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
