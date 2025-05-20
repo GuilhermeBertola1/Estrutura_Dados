@@ -41,7 +41,7 @@ int main() {
     int opcao = 0;
     scanf("%d", &opcao);
 
-    printf("Você escolheu a opcao %d\n", opcao);
+    printf("Voce escolheu a opcao %d\n", opcao);
 
     switch (opcao){
     case 1:
