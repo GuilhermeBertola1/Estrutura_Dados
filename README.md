@@ -1,4 +1,4 @@
- -<h1 align="center">Trabalho final de estrutura de dados, feito pela turma da UNESP - Sorocaba</h1>
+ <h1 align="center">Trabalho final de estrutura de dados (UNESP - Sorocaba)</h1>
  - Nomes dos integrantes:
  - - Guilherme Fontes Bertola
    - Gustavo Germano
