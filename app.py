@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import datetime
+from statsmodels.tsa.api import VAR
 
 st.title("📊 Interface Gráfica - Cliente ZeroMQ")
 
@@ -100,3 +101,45 @@ if st.session_state["dados"]:
     )
 
     st.altair_chart(grafico, use_container_width=True)
+
+    # Caixa para predição
+    st.subheader("🔮 Predição com VAR")
+    data_inicio_pred = st.date_input("📅 Início da predição", key="pred_ini")
+    data_fim_pred = st.date_input("📅 Fim da predição", key="pred_fim")
+
+    if st.button("🚀 Treinar e Prever"):
+        try:
+            df = df.sort_values("data").set_index("data")
+            df = df.apply(pd.to_numeric, errors="coerce")
+            df = df.dropna(axis=1, how="all").dropna()
+
+            print(df);
+
+            modelo = VAR(df)
+            lag_order = modelo.select_order(13).hqic
+            resultados = modelo.fit(lag_order)
+
+            n_passos = (data_fim_pred - data_inicio_pred).days + 1
+            previsao = resultados.forecast(df.values[-lag_order:], steps=n_passos)
+
+            df_prev = pd.DataFrame(previsao, columns=df.columns)
+            datas_prev = pd.date_range(start=data_inicio_pred, periods=n_passos, freq="D")
+            df_prev["data"] = datas_prev
+
+            st.write("📈 Previsão:")
+            st.dataframe(df_prev)
+
+            grafico_prev = alt.Chart(df_prev).mark_line().encode(
+                x="data:T",
+                y=escolha,
+                tooltip=["data", escolha]
+            ).properties(
+                width=800,
+                height=400,
+                title=f"Previsão de {escolha}"
+            )
+
+            st.altair_chart(grafico_prev, use_container_width=True)
+
+        except Exception as e:
+            st.error(f"Erro ao treinar o modelo VAR: {e}")
