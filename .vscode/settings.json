@@ -3,6 +3,7 @@
         "avl.h": "c",
         "string.h": "c",
         "stdio.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "zmq.h": "c"
     }
 }
