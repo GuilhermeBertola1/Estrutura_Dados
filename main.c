@@ -194,9 +194,7 @@ int main() {
     case 4:
         // Inicializa tabela cuckoo
         inicializarCuckoo(2053);
-
         char linha1[4096];
-
         // Pula o cabeçalho
         fgets(linha1, sizeof(linha1), f);
 
@@ -252,7 +250,8 @@ int main() {
 
         fclose(f);
         printf("Dados inseridos na tabela Cuckoo Hashing.\n");
-
+        exibirCuckoo();
+        printf(buscar_intervalo_cuckoo("2022-05-12 01:00:00 PM", "2022-05-12 03:00:00 PM"));
         // Loop para responder consultas
         while (1) {
             char buffer[4096];

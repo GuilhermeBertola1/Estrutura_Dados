@@ -114,7 +114,6 @@ if st.session_state["dados"]:
             df = df.dropna(axis=1, how="all").dropna()
 
             print(df);
-
             modelo = VAR(df)
             lag_order = modelo.select_order(13).hqic
             resultados = modelo.fit(lag_order)

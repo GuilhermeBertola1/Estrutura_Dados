@@ -153,8 +153,8 @@ void rehash(size_t novo_tamanho) {
 
 // Função principal de inserção, que chama rehash se necessário
 int inserirCuckoo(const Registro1 *r) {
+    printf("Inserindo: [%s]\n", r->data);
     if (existe_na_tabela(r->data)) {
-        // Já existe: evita duplicar.
         return 1;
     }
 
@@ -181,6 +181,7 @@ long long datetime_para_inteiro_cuck(const char *datetime) {
     int ano, mes, dia, hora, min, seg;
     char ampm[3] = "";
 
+    // Verifica se tem AM/PM no final
     if (strstr(datetime, "AM") || strstr(datetime, "PM") || strstr(datetime, "am") || strstr(datetime, "pm")) {
         sscanf(datetime, "%d-%d-%d %d:%d:%d %2s", &ano, &mes, &dia, &hora, &min, &seg, ampm);
 
@@ -192,6 +193,15 @@ long long datetime_para_inteiro_cuck(const char *datetime) {
         sscanf(datetime, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
     }
 
+    printf("datetime_para_inteiro_cuck: [%s] => %04d-%02d-%02d %02d:%02d:%02d (%s) => %lld\n",
+       datetime, ano, mes, dia, hora, min, seg, ampm, 
+       (long long)ano * 10000000000LL +
+       (long long)mes * 100000000 +
+       (long long)dia * 1000000 +
+       (long long)hora * 10000 +
+       (long long)min * 100 +
+       (long long)seg);
+
     return (long long)ano * 10000000000LL +
            (long long)mes * 100000000 +
            (long long)dia * 1000000 +
@@ -200,7 +210,33 @@ long long datetime_para_inteiro_cuck(const char *datetime) {
            (long long)seg;
 }
 
+void converter_24h_para_12h(const char *data_24h, char *saida_am_pm, size_t tamanho_saida) {
+    int ano, mes, dia, hora, min, seg;
+    sscanf(data_24h, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
+
+    char ampm[3] = "AM";
+    int hora_12 = hora;
+
+    if (hora == 0) {
+        hora_12 = 12;
+        strcpy(ampm, "AM");
+    } else if (hora == 12) {
+        hora_12 = 12;
+        strcpy(ampm, "PM");
+    } else if (hora > 12) {
+        hora_12 = hora - 12;
+        strcpy(ampm, "PM");
+    } else {
+        // hora entre 1 e 11
+        strcpy(ampm, "AM");
+    }
+
+    snprintf(saida_am_pm, tamanho_saida, "%04d-%02d-%02d %02d:%02d:%02d %s",
+             ano, mes, dia, hora_12, min, seg, ampm);
+}
+
 char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
+    printf("Recebido: '%s' ate '%s'\n", inicio_str, fim_str);
     long long inicio = datetime_para_inteiro_cuck(inicio_str);
     long long fim = datetime_para_inteiro_cuck(fim_str);
 
@@ -218,6 +254,8 @@ char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
 
     #define ADICIONA_REGISTRO(r) do { \
     char temp[1024]; \
+    char data_am_pm[MAX_STR]; \
+    converter_24h_para_12h((r).data, data_am_pm, sizeof(data_am_pm)); \
     int n = snprintf(temp, sizeof(temp), \
         "%s{\n" \
         "  \"data\": \"%s\",\n" \
@@ -232,7 +270,7 @@ char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
         "  \"perdas_geracao_total\": %.2f\n" \
         "}", \
         primeiro ? "" : ",\n", \
-        (r).data, \
+        data_am_pm, \
         (r).demanda_residual, \
         (r).demanda_contratada, \
         (r).geracao_despachavel, \
@@ -242,16 +280,16 @@ char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
         (r).carga_reduzida_manual, \
         (r).capacidade_instalada, \
         (r).perdas_geracao_total); \
-        if (n < 0) { perror("snprintf"); exit(1); } \
-        while ((size_t)(usado + n + 1) >= capacidade) { \
-            capacidade *= 2; \
-            resultado = realloc(resultado, capacidade); \
-            if (!resultado) { perror("realloc"); exit(1); } \
-        } \
-        memcpy(resultado + usado, temp, n); \
-        usado += n; \
-        resultado[usado] = '\0'; \
-        primeiro = 0; \
+    if (n < 0) { perror("snprintf"); exit(1); } \
+    while ((size_t)(usado + n + 1) >= capacidade) { \
+        capacidade *= 2; \
+        resultado = realloc(resultado, capacidade); \
+        if (!resultado) { perror("realloc"); exit(1); } \
+    } \
+    memcpy(resultado + usado, temp, n); \
+    usado += n; \
+    resultado[usado] = '\0'; \
+    primeiro = 0; \
     } while (0)
 
     for (size_t i = 0; i < tamanho_atual; i++) {
@@ -273,6 +311,50 @@ char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
     }
 
     usado += snprintf(resultado + usado, capacidade - usado, "]");
-
     return resultado;
+}
+
+void exibirCuckoo() {
+    int contador = 0;
+    printf("Exibindo dados da Tabela Cuckoo:\n");
+    printf("Tamanho atual: %zu | Quantidade de itens: %zu\n", tamanho_atual, quantidade_itens);
+    printf("------------------------------------------------------------\n");
+
+    for (size_t i = 0; i < tamanho_atual; i++) {
+        if (tabela1[i].ocupado) {
+            printf("[Tabela 1][%zu]: Chave: %s\n", i, tabela1[i].chave);
+            printf("  Data: %s\n", tabela1[i].valor.data);
+            printf("  Demanda Residual: %.2f\n", tabela1[i].valor.demanda_residual);
+            printf("  Demanda Contratada: %.2f\n", tabela1[i].valor.demanda_contratada);
+            printf("  Geração Despachável: %.2f\n", tabela1[i].valor.geracao_despachavel);
+            printf("  Geração Térmica: %.2f\n", tabela1[i].valor.geracao_termica);
+            printf("  Importações: %.2f\n", tabela1[i].valor.importacoes);
+            printf("  Geração Renovável Total: %.2f\n", tabela1[i].valor.geracao_renovavel_total);
+            printf("  Carga Reduzida Manual: %.2f\n", tabela1[i].valor.carga_reduzida_manual);
+            printf("  Capacidade Instalada: %.2f\n", tabela1[i].valor.capacidade_instalada);
+            printf("  Perdas Geração Total: %.2f\n", tabela1[i].valor.perdas_geracao_total);
+            printf("------------------------------------------------------------\n");
+            contador++;
+        }
+    }
+
+    for (size_t i = 0; i < tamanho_atual; i++) {
+        if (tabela2[i].ocupado) {
+            printf("[Tabela 2][%zu]: Chave: %s\n", i, tabela2[i].chave);
+            printf("  Data: %s\n", tabela2[i].valor.data);
+            printf("  Demanda Residual: %.2f\n", tabela2[i].valor.demanda_residual);
+            printf("  Demanda Contratada: %.2f\n", tabela2[i].valor.demanda_contratada);
+            printf("  Geração Despachável: %.2f\n", tabela2[i].valor.geracao_despachavel);
+            printf("  Geração Térmica: %.2f\n", tabela2[i].valor.geracao_termica);
+            printf("  Importações: %.2f\n", tabela2[i].valor.importacoes);
+            printf("  Geração Renovável Total: %.2f\n", tabela2[i].valor.geracao_renovavel_total);
+            printf("  Carga Reduzida Manual: %.2f\n", tabela2[i].valor.carga_reduzida_manual);
+            printf("  Capacidade Instalada: %.2f\n", tabela2[i].valor.capacidade_instalada);
+            printf("  Perdas Geração Total: %.2f\n", tabela2[i].valor.perdas_geracao_total);
+            printf("------------------------------------------------------------\n");
+            contador++;
+        }
+    }
+
+    printf("Numero de itens: %d", contador);
 }
