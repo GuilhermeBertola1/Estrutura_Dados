@@ -201,109 +201,88 @@ long long datetime_para_inteiro_cuck(const char *datetime) {
            (long long)seg;
 }
 
-void converter_24h_para_12h(const char *data_24h, char *saida_am_pm, size_t tamanho_saida) {
-    int ano, mes, dia, hora, min, seg;
-    sscanf(data_24h, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
-
-    char ampm[3] = "AM";
-    int hora_12 = hora;
-
-    if (hora == 0) {
-        hora_12 = 12;
-        strcpy(ampm, "AM");
-    } else if (hora == 12) {
-        hora_12 = 12;
-        strcpy(ampm, "PM");
-    } else if (hora > 12) {
-        hora_12 = hora - 12;
-        strcpy(ampm, "PM");
-    } else {
-        // hora entre 1 e 11
-        strcpy(ampm, "AM");
-    }
-
-    snprintf(saida_am_pm, tamanho_saida, "%04d-%02d-%02d %02d:%02d:%02d %s",
-             ano, mes, dia, hora_12, min, seg, ampm);
-}
-
-char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
-    printf("Recebido: '%s' ate '%s'\n", inicio_str, fim_str);
-    long long inicio = datetime_para_inteiro_cuck(inicio_str);
-    long long fim = datetime_para_inteiro_cuck(fim_str);
+void buscar_intervalo_cuckoo(const char *data_inicio, const char *data_fim, char **saida) {
+    long long inicio = datetime_para_inteiro_cuck(data_inicio);
+    long long fim = datetime_para_inteiro_cuck(data_fim);
+    int primeiro = 1;
 
     size_t capacidade = 8192;
     size_t usado = 0;
-    char *resultado = malloc(capacidade);
-    if (!resultado) {
+    char *tmp_buffer = malloc(capacidade);
+    if (!tmp_buffer) {
         perror("malloc");
         exit(1);
     }
 
-    usado += snprintf(resultado + usado, capacidade - usado, "[");
-
-    int primeiro = 1;
-
-    #define ADICIONA_REGISTRO(r) do { \
-    char temp[2048]; \
-    char data_am_pm[MAX_STR]; \
-    converter_24h_para_12h((r).data, data_am_pm, sizeof(data_am_pm)); \
-    int n = snprintf(temp, sizeof(temp), \
-        "%s{\n" \
-        "  \"data\": \"%s\",\n" \
-        "  \"demanda_residual\": %.2f,\n" \
-        "  \"demanda_contratada\": %.2f,\n" \
-        "  \"geracao_despachavel\": %.2f,\n" \
-        "  \"geracao_termica\": %.2f,\n" \
-        "  \"importacoes\": %.2f,\n" \
-        "  \"geracao_renovavel_total\": %.2f,\n" \
-        "  \"carga_reduzida_manual\": %.2f,\n" \
-        "  \"capacidade_instalada\": %.2f,\n" \
-        "  \"perdas_geracao_total\": %.2f\n" \
-        "}", \
-        primeiro ? "" : ",\n", \
-        data_am_pm, \
-        (r).demanda_residual, \
-        (r).demanda_contratada, \
-        (r).geracao_despachavel, \
-        (r).geracao_termica, \
-        (r).importacoes, \
-        (r).geracao_renovavel_total, \
-        (r).carga_reduzida_manual, \
-        (r).capacidade_instalada, \
-        (r).perdas_geracao_total); \
-    if (n < 0) { perror("snprintf"); exit(1); } \
-    while ((size_t)(usado + n + 1) >= capacidade) { \
-        capacidade *= 2; \
-        resultado = realloc(resultado, capacidade); \
-        if (!resultado) { perror("realloc"); exit(1); } \
-    } \
-    memcpy(resultado + usado, temp, n); \
-    usado += n; \
-    resultado[usado] = '\0'; \
-    primeiro = 0; \
-    } while (0)
+    usado = snprintf(tmp_buffer, capacidade, "[");
 
     for (size_t i = 0; i < tamanho_atual; i++) {
-        if (tabela1[i].ocupado) {
-            long long dt = datetime_para_inteiro_cuck(tabela1[i].valor.data);
-            if (dt >= inicio && dt <= fim) {
-                ADICIONA_REGISTRO(tabela1[i].valor);
+        CuckooEntry *registros[2] = { &tabela1[i], &tabela2[i] };
+        for (int j = 0; j < 2; j++) {
+            if (registros[j]->ocupado && strlen(registros[j]->valor.data) > 0) {
+                long long data_reg = datetime_para_inteiro_cuck(registros[j]->valor.data);
+                if (data_reg >= inicio && data_reg <= fim) {
+                    char item[2048];
+                    int n = snprintf(item, sizeof(item),
+                        "%s{\n"
+                        "  \"data\": \"%s\",\n"
+                        "  \"demanda_residual\": %.2f,\n"
+                        "  \"demanda_contratada\": %.2f,\n"
+                        "  \"geracao_despachavel\": %.2f,\n"
+                        "  \"geracao_termica\": %.2f,\n"
+                        "  \"importacoes\": %.2f,\n"
+                        "  \"geracao_renovavel_total\": %.2f,\n"
+                        "  \"carga_reduzida_manual\": %.2f,\n"
+                        "  \"capacidade_instalada\": %.2f,\n"
+                        "  \"perdas_geracao_total\": %.2f\n"
+                        "}",
+                        (primeiro ? "" : ",\n"),
+                        registros[j]->valor.data,
+                        registros[j]->valor.demanda_residual,
+                        registros[j]->valor.demanda_contratada,
+                        registros[j]->valor.geracao_despachavel,
+                        registros[j]->valor.geracao_termica,
+                        registros[j]->valor.importacoes,
+                        registros[j]->valor.geracao_renovavel_total,
+                        registros[j]->valor.carga_reduzida_manual,
+                        registros[j]->valor.capacidade_instalada,
+                        registros[j]->valor.perdas_geracao_total
+                    );
+
+                    if (usado + n + 1 >= capacidade) {
+                        capacidade *= 2;
+                        tmp_buffer = realloc(tmp_buffer, capacidade);
+                        if (!tmp_buffer) {
+                            perror("realloc");
+                            exit(1);
+                        }
+                    }
+
+                    memcpy(tmp_buffer + usado, item, n);
+                    usado += n;
+                    tmp_buffer[usado] = '\0';
+                    primeiro = 0;
+                }
             }
         }
     }
 
-    for (size_t i = 0; i < tamanho_atual; i++) {
-        if (tabela2[i].ocupado) {
-            long long dt = datetime_para_inteiro_cuck(tabela2[i].valor.data);
-            if (dt >= inicio && dt <= fim) {
-                ADICIONA_REGISTRO(tabela2[i].valor);
-            }
+    if (usado + 2 >= capacidade) {
+        capacidade += 2;
+        tmp_buffer = realloc(tmp_buffer, capacidade);
+        if (!tmp_buffer) {
+            perror("realloc");
+            exit(1);
         }
     }
 
-    usado += snprintf(resultado + usado, capacidade - usado, "]");
-    return resultado;
+    tmp_buffer[usado++] = ']';
+    tmp_buffer[usado] = '\0';
+
+    *saida = tmp_buffer;
 }
+
+
 
 void exibirCuckoo() {
     int contador = 0;

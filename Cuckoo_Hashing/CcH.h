@@ -34,10 +34,9 @@ void liberarCuckoo(void);
 
 int inserirCuckoo(const Registro1 *r);
 long long datetime_para_inteiro_cuck(const char *datetime);
-char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str);
+void buscar_intervalo_cuckoo(const char *data_inicio, const char *data_fim, char **saida);
 
 // Declaração da nova função para conversão de 24h para 12h AM/PM
-void converter_24h_para_12h(const char *data_24h, char *saida_am_pm, size_t tamanho_saida);
 void exibirCuckoo();
 
 #endif // CUCKOO_HASH_H
