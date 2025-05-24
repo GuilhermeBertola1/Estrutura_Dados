@@ -21,8 +21,8 @@ typedef struct {
     int ocupado;
 } Entrada;
 
-int hashSimples(const char *chave, int tamanho);
 unsigned long hashDJB2(const char *str);
+int hashSimples(const char *chave, int tamanho);
 void inicializarHash();
 int inserirHash_linear_sem_rehash(const Entrada *e);
 void rehash_linear();

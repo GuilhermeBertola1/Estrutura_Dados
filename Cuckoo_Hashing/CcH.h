@@ -29,14 +29,15 @@ extern CuckooEntry *tabela2;
 extern size_t tamanho_atual;
 extern size_t quantidade_itens;
 
+unsigned int hash1(const char *str);
+unsigned int hash2(const char *str);
 void inicializarCuckoo(size_t tamanho_inicial);
 void liberarCuckoo(void);
-
+int existe_na_tabela(const char *chave);
+void rehash(size_t novo_tamanho);
 int inserirCuckoo(const Registro1 *r);
 long long datetime_para_inteiro_cuck(const char *datetime);
 void buscar_intervalo_cuckoo(const char *data_inicio, const char *data_fim, char **saida);
-
-// Declaração da nova função para conversão de 24h para 12h AM/PM
 void exibirCuckoo();
 
 #endif // CUCKOO_HASH_H
