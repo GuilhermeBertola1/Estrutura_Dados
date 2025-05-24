@@ -28,9 +28,8 @@ int inserirHash_linear_sem_rehash(const Entrada *e);
 void rehash_linear();
 int inserirHash_linear(const Entrada *e);
 int removerHash_linear(const char *chave);
-char *buscar_intervalo_linear(const char *inicio, const char *fim);
-void estatisticasHash();
 long long datetime_para_inteiro_linear(const char *data_str);
-void converter_24h_para_12h_linear(const char *entrada, char *saida, size_t tamanho);
+void buscar_intervalo_linear(const char *inicio_str, const char *fim_str, char **saida);
+void estatisticasHash();
 
 #endif

@@ -126,15 +126,6 @@ long long datetime_para_inteiro_linear(const char *datetime) {
         sscanf(datetime, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
     }
 
-    printf("datetime_para_inteiro_cuck: [%s] => %04d-%02d-%02d %02d:%02d:%02d (%s) => %lld\n",
-       datetime, ano, mes, dia, hora, min, seg, ampm, 
-       (long long)ano * 10000000000LL +
-       (long long)mes * 100000000 +
-       (long long)dia * 1000000 +
-       (long long)hora * 10000 +
-       (long long)min * 100 +
-       (long long)seg);
-
     return (long long)ano * 10000000000LL +
            (long long)mes * 100000000 +
            (long long)dia * 1000000 +
@@ -143,51 +134,27 @@ long long datetime_para_inteiro_linear(const char *datetime) {
            (long long)seg;
 }
 
-void converter_24h_para_12h_linear(const char *data_24h, char *saida_am_pm, size_t tamanho_saida) {
-    int ano, mes, dia, hora, min, seg;
-    sscanf(data_24h, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
-
-    char ampm[3] = "AM";
-    int hora_12 = hora;
-
-    if (hora == 0) {
-        hora_12 = 12;
-        strcpy(ampm, "AM");
-    } else if (hora == 12) {
-        hora_12 = 12;
-        strcpy(ampm, "PM");
-    } else if (hora > 12) {
-        hora_12 = hora - 12;
-        strcpy(ampm, "PM");
-    } else {
-        // hora entre 1 e 11
-        strcpy(ampm, "AM");
-    }
-
-    snprintf(saida_am_pm, tamanho_saida, "%04d-%02d-%02d %02d:%02d:%02d %s",
-             ano, mes, dia, hora_12, min, seg, ampm);
-}
-
-char *buscar_intervalo_linear(const char *inicio_str, const char *fim_str) {
+void buscar_intervalo_linear(const char *inicio_str, const char *fim_str, char **saida) {
     long long inicio = datetime_para_inteiro_linear(inicio_str);
     long long fim = datetime_para_inteiro_linear(fim_str);
 
     size_t capacidade = 8192;
     size_t usado = 0;
-    char *resultado = malloc(capacidade);
-    if (!resultado) { perror("malloc"); exit(1); }
+    char *buffer = malloc(capacidade);
+    if (!buffer) {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
 
-    usado += snprintf(resultado + usado, capacidade - usado, "[");
+    usado = snprintf(buffer, capacidade, "[");
     int primeiro = 1;
 
     for (int i = 0; i < TABLE_SIZE; i++) {
         if (hashLinear[i].ocupado == OCUPADO) {
             long long dt = datetime_para_inteiro_linear(hashLinear[i].data);
             if (dt >= inicio && dt <= fim) {
-                char temp[1024];
-                char data_am_pm[MAX_STR2];
-                converter_24h_para_12h_linear(hashLinear[i].data, data_am_pm, sizeof(data_am_pm));
-                int n = snprintf(temp, sizeof(temp),
+                char item[1024];
+                int n = snprintf(item, sizeof(item),
                     "%s{\n"
                     "  \"data\": \"%s\",\n"
                     "  \"demanda_residual\": %.2f,\n"
@@ -200,7 +167,8 @@ char *buscar_intervalo_linear(const char *inicio_str, const char *fim_str) {
                     "  \"capacidade_instalada\": %.2f,\n"
                     "  \"perdas_geracao_total\": %.2f\n"
                     "}",
-                    primeiro ? "" : ",\n", data_am_pm,
+                    primeiro ? "" : ",\n",
+                    hashLinear[i].data,
                     hashLinear[i].demanda_residual,
                     hashLinear[i].demanda_contratada,
                     hashLinear[i].geracao_despachavel,
@@ -211,21 +179,37 @@ char *buscar_intervalo_linear(const char *inicio_str, const char *fim_str) {
                     hashLinear[i].capacidade_instalada,
                     hashLinear[i].perdas_geracao_total
                 );
+
                 if (usado + n + 1 >= capacidade) {
                     capacidade *= 2;
-                    resultado = realloc(resultado, capacidade);
-                    if (!resultado) { perror("realloc"); exit(1); }
+                    buffer = realloc(buffer, capacidade);
+                    if (!buffer) {
+                        perror("realloc");
+                        exit(EXIT_FAILURE);
+                    }
                 }
-                memcpy(resultado + usado, temp, n);
+
+                memcpy(buffer + usado, item, n);
                 usado += n;
-                resultado[usado] = '\0';
+                buffer[usado] = '\0';
                 primeiro = 0;
             }
         }
     }
 
-    usado += snprintf(resultado + usado, capacidade - usado, "]");
-    return resultado;
+    if (usado + 2 >= capacidade) {
+        capacidade += 2;
+        buffer = realloc(buffer, capacidade);
+        if (!buffer) {
+            perror("realloc");
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    buffer[usado++] = ']';
+    buffer[usado] = '\0';
+
+    *saida = buffer;
 }
 
 void estatisticasHash() {
