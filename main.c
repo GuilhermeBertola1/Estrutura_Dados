@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include "AVL/avl.h"
 #include "Cuckoo_Hashing/CcH.h"
+#include "Hash_table/Hash.h"
 
 int main() {
     FILE *f = fopen("dataset/ESK2033.csv", "r");
@@ -164,7 +165,63 @@ int main() {
         break;
     case 3:
 
+        inicializarHash();
+        char linha2[4096];
+        // Pula o cabeçalho
+        fgets(linha2, sizeof(linha2), f);
 
+        while (fgets(linha2, sizeof(linha2), f)) {
+            Entrada r2;
+            char *token = strtok(linha2, ",");
+            if (!token) continue;
+
+            strncpy(r2.data, token, sizeof(r2.data));
+            r2.data[sizeof(r2.data) - 1] = '\0';
+
+            // Avança tokens para preencher os campos conforme ordem e quantidade puladas no CSV
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.demanda_residual = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.demanda_contratada = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.importacoes = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.geracao_termica = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.geracao_despachavel = atof(token);
+
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.geracao_renovavel_total = atof(token);
+
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.capacidade_instalada = atof(token);
+
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.perdas_geracao_total = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            r2.carga_reduzida_manual = atof(token);
+
+            if (!inserirHash_linear(&r2)) {
+                fprintf(stderr, "Falha ao inserir registro: %s\n", r2.data);
+            }
+        }
+
+        fclose(f);
+        printf("Dados inseridos na tabela Cuckoo Hashing.\n");
 
         // Inicializa socket ZeroMQ
         while (1) {
@@ -175,11 +232,8 @@ int main() {
             buffer[strcspn(buffer, "\r\n")] = 0;
 
             char data_inicio[32], data_fim[32];
-            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
-                char *resposta_json;
-                printf(data_inicio);
-                printf(data_fim);
-                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+            if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json = buscar_intervalo_linear(data_inicio, data_fim);
                 zmq_send(responder, resposta_json, strlen(resposta_json), 0);
                 free(resposta_json);
             } else {
@@ -191,6 +245,7 @@ int main() {
         zmq_close(responder);
         zmq_ctx_term(context);
         break;
+        
     case 4:
         // Inicializa tabela cuckoo
         inicializarCuckoo(2053);
@@ -199,59 +254,58 @@ int main() {
         fgets(linha1, sizeof(linha1), f);
 
         while (fgets(linha1, sizeof(linha1), f)) {
-            Registro1 r;
+            Registro1 r1;
             char *token = strtok(linha1, ",");
             if (!token) continue;
 
-            strncpy(r.data, token, sizeof(r.data));
-            r.data[sizeof(r.data) - 1] = '\0';
+            strncpy(r1.data, token, sizeof(r1.data));
+            r1.data[sizeof(r1.data) - 1] = '\0';
 
             // Avança tokens para preencher os campos conforme ordem e quantidade puladas no CSV
             for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.demanda_residual = atof(token);
+            r1.demanda_residual = atof(token);
 
             token = strtok(NULL, ",");
             if (!token) continue;
-            r.demanda_contratada = atof(token);
+            r1.demanda_contratada = atof(token);
 
             token = strtok(NULL, ",");
             if (!token) continue;
-            r.importacoes = atof(token);
+            r1.importacoes = atof(token);
 
             for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.geracao_termica = atof(token);
+            r1.geracao_termica = atof(token);
 
             for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.geracao_despachavel = atof(token);
+            r1.geracao_despachavel = atof(token);
 
             for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.geracao_renovavel_total = atof(token);
+            r1.geracao_renovavel_total = atof(token);
 
             for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.capacidade_instalada = atof(token);
+            r1.capacidade_instalada = atof(token);
 
             for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.perdas_geracao_total = atof(token);
+            r1.perdas_geracao_total = atof(token);
 
             for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
             if (!token) continue;
-            r.carga_reduzida_manual = atof(token);
+            r1.carga_reduzida_manual = atof(token);
 
-            if (!inserirCuckoo(&r)) {
-                fprintf(stderr, "Falha ao inserir registro: %s\n", r.data);
+            if (!inserirCuckoo(&r1)) {
+                fprintf(stderr, "Falha ao inserir registro: %s\n", r1.data);
             }
         }
 
         fclose(f);
         printf("Dados inseridos na tabela Cuckoo Hashing.\n");
         exibirCuckoo();
-        printf(buscar_intervalo_cuckoo("2022-05-12 01:00:00 PM", "2022-05-12 03:00:00 PM"));
         // Loop para responder consultas
         while (1) {
             char buffer[4096];

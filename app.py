@@ -58,7 +58,8 @@ if st.button("🔄 Requisitar dados por intervalo"):
     try:
         dados = json.loads(resposta)
         if isinstance(dados, list):
-            st.session_state["dados"].extend(dados)
+            st.session_state["dados"] = dados
+            print(st.session_state["dados"])
             st.success("✅ Dados recebidos com sucesso.")
         else:
             st.error("❌ Formato de resposta inválido.")
@@ -71,7 +72,10 @@ if st.button("🔄 Requisitar dados por intervalo"):
 # Exibição dos dados e gráfico
 if st.session_state["dados"]:
     df = pd.DataFrame(st.session_state["dados"])
-    df["data"] = pd.to_datetime(df["data"])
+    print(df["data"])
+    df["data"] = pd.to_datetime(df["data"], format="%Y-%m-%d %I:%M:%S %p")
+    df = df.sort_values("data")
+    print(df["data"])
 
     st.write("🧾 Dados Recebidos:")
     st.dataframe(df)
@@ -109,7 +113,7 @@ if st.session_state["dados"]:
 
     if st.button("🚀 Treinar e Prever"):
         try:
-            df = df.sort_values("data").set_index("data")
+            df = df.set_index("data")
             df = df.apply(pd.to_numeric, errors="coerce")
             df = df.dropna(axis=1, how="all").dropna()
 
@@ -139,6 +143,5 @@ if st.session_state["dados"]:
             )
 
             st.altair_chart(grafico_prev, use_container_width=True)
-
         except Exception as e:
             st.error(f"Erro ao treinar o modelo VAR: {e}")

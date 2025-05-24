@@ -193,15 +193,6 @@ long long datetime_para_inteiro_cuck(const char *datetime) {
         sscanf(datetime, "%d-%d-%d %d:%d:%d", &ano, &mes, &dia, &hora, &min, &seg);
     }
 
-    printf("datetime_para_inteiro_cuck: [%s] => %04d-%02d-%02d %02d:%02d:%02d (%s) => %lld\n",
-       datetime, ano, mes, dia, hora, min, seg, ampm, 
-       (long long)ano * 10000000000LL +
-       (long long)mes * 100000000 +
-       (long long)dia * 1000000 +
-       (long long)hora * 10000 +
-       (long long)min * 100 +
-       (long long)seg);
-
     return (long long)ano * 10000000000LL +
            (long long)mes * 100000000 +
            (long long)dia * 1000000 +
@@ -253,7 +244,7 @@ char *buscar_intervalo_cuckoo(const char *inicio_str, const char *fim_str) {
     int primeiro = 1;
 
     #define ADICIONA_REGISTRO(r) do { \
-    char temp[1024]; \
+    char temp[2048]; \
     char data_am_pm[MAX_STR]; \
     converter_24h_para_12h((r).data, data_am_pm, sizeof(data_am_pm)); \
     int n = snprintf(temp, sizeof(temp), \

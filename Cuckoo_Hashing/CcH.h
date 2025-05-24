@@ -3,7 +3,7 @@
 
 #include <stddef.h>  // para size_t
 
-#define MAX_STR 100
+#define MAX_STR 2048
 
 typedef struct {
     char data[MAX_STR];
