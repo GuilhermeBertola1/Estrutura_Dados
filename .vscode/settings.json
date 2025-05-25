@@ -4,6 +4,7 @@
         "string.h": "c",
         "stdio.h": "c",
         "stdlib.h": "c",
-        "zmq.h": "c"
+        "zmq.h": "c",
+        "list.h": "c"
     }
 }

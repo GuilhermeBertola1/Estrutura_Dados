@@ -10,6 +10,7 @@
                 "AVL/avl.c",
                 "Cuckoo_Hashing/Cch.c",
                 "Hash_table/Hash.c",
+                "Lista_Encadeada/List.c",
                 "-o", "programa",
                 "-IC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/include",
                 "-LC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/lib",

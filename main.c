@@ -7,6 +7,7 @@
 #include "AVL/avl.h"
 #include "Cuckoo_Hashing/CcH.h"
 #include "Hash_table/Hash.h"
+#include "Lista_Encadeada/List.h"
 
 int main() {
     FILE *f = fopen("dataset/ESK2033.csv", "r");
@@ -27,16 +28,17 @@ int main() {
     const char *cyan = "\033[0;36m";
     const char *reset = "\033[0m";
 
-    printf("%s===============================%s\n", cyan, reset);
-    printf("%s      Selecione a estrutura   %s\n", green, reset);
-    printf("%s===============================%s\n", cyan, reset);
+    printf("%s========================================%s\n", cyan, reset);
+    printf("%s          Selecione a estrutura        %s\n", green, reset);
+    printf("%s========================================%s\n", cyan, reset);
 
     printf("%s[1]%s AVL\n", yellow, reset);
     printf("%s[2]%s Lista Encadeada\n", yellow, reset);
     printf("%s[3]%s Tabela Hash\n", yellow, reset);
     printf("%s[4]%s Cuckoo Hashing\n", yellow, reset);
     printf("%s[5]%s Trie\n", yellow, reset);
-    printf("%s[6]%s Dataframe\n", yellow, reset);
+    printf("%s[6]%s Fenwickk Tree\n", yellow, reset);
+    printf("%s[7]%s Segment Tree\n", yellow, reset);
 
     printf("\n%sDigite a opcao desejada:%s ", blue, reset);
 
@@ -135,8 +137,64 @@ int main() {
 
         break;
     case 2:
+        char linha3[4096];
 
-        
+        fgets(linha3, sizeof(linha3), f); // pula cabeçalho
+
+        while (fgets(linha3, sizeof(linha3), f)) {
+            EletricDates list;
+            char *token = strtok(linha3, ",");
+
+            if (!token) continue;
+
+            // Copia data direto (esperando formato com AM/PM)
+            strncpy(list.data, token, sizeof(list.data));
+            list.data[sizeof(list.data)-1] = '\0';
+
+            // Avança tokens e lê os campos que quer
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.demanda_residual = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            list.demanda_contratada = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            list.importacoes = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.geracao_termica = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.geracao_despachavel = atof(token);
+
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.geracao_renovavel_total = atof(token);
+
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.capacidade_instalada = atof(token);
+
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.perdas_geracao_total = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            list.carga_reduzida_manual = atof(token);
+
+            if (!in(&lista_ligada, &list)) {
+                fprintf(stderr, "Falha ao inserir registro: %s\n", list.data);
+            }
+        }
+
+        fclose(f);
+        imprimir_lista(lista_ligada);
         
         // Inicializa socket ZeroMQ
         while (1) {
@@ -151,7 +209,7 @@ int main() {
                 char *resposta_json;
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                buscar_intervalo_list(data_inicio, data_fim, &resposta_json);
                 zmq_send(responder, resposta_json, strlen(resposta_json), 0);
                 free(resposta_json);
             } else {
@@ -388,6 +446,10 @@ int main() {
 
         zmq_close(responder);
         zmq_ctx_term(context);
+        break;
+
+    case 7:
+        
         break;
     default:
         break;
