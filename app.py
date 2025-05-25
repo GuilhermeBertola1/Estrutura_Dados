@@ -92,7 +92,7 @@ if st.session_state["dados"]:
         "perdas_geracao_total"
     ]
 
-    escolha = st.selectbox("📈 Escolha a variável para o gráfico:", colunas)
+    escolha = st.selectbox("📈 Escolha a variável para o gráfico:", colunas, key="grafico_real")
 
     grafico = alt.Chart(df).mark_line(point=True).encode(
         x="data:T",
@@ -107,6 +107,7 @@ if st.session_state["dados"]:
     st.altair_chart(grafico, use_container_width=True)
 
     # Caixa para predição
+    # Caixa para predição
     st.subheader("🔮 Predição com VAR")
     data_inicio_pred = st.date_input("📅 Início da predição", key="pred_ini")
     data_fim_pred = st.date_input("📅 Fim da predição", key="pred_fim")
@@ -117,7 +118,6 @@ if st.session_state["dados"]:
             df = df.apply(pd.to_numeric, errors="coerce")
             df = df.dropna(axis=1, how="all").dropna()
 
-            print(df);
             modelo = VAR(df)
             lag_order = modelo.select_order(13).hqic
             resultados = modelo.fit(lag_order)
@@ -129,19 +129,28 @@ if st.session_state["dados"]:
             datas_prev = pd.date_range(start=data_inicio_pred, periods=n_passos, freq="D")
             df_prev["data"] = datas_prev
 
-            st.write("📈 Previsão:")
-            st.dataframe(df_prev)
+            st.session_state["df_prev"] = df_prev
 
-            grafico_prev = alt.Chart(df_prev).mark_line().encode(
-                x="data:T",
-                y=escolha,
-                tooltip=["data", escolha]
-            ).properties(
-                width=800,
-                height=400,
-                title=f"Previsão de {escolha}"
-            )
-
-            st.altair_chart(grafico_prev, use_container_width=True)
+            st.success("✅ Predição gerada com sucesso.")
         except Exception as e:
             st.error(f"Erro ao treinar o modelo VAR: {e}")
+
+    # Se houver predição salva, mostrar gráfico
+    if "df_prev" in st.session_state:
+        df_prev = st.session_state["df_prev"]
+        st.write("📈 Previsão:")
+        st.dataframe(df_prev)
+
+        escolha1 = st.selectbox("📈 Escolha a variável para o gráfico:", colunas, key="grafico_prev")
+
+        grafico_prev = alt.Chart(df_prev).mark_line().encode(
+            x="data:T",
+            y=escolha1,
+            tooltip=["data", escolha1]
+        ).properties(
+            width=800,
+            height=400,
+            title=f"Previsão de {escolha1}"
+        )
+
+        st.altair_chart(grafico_prev, use_container_width=True)
