@@ -8,7 +8,7 @@
             "args": [
                 "main.c",
                 "AVL/avl.c",
-                "Cuckoo_Hashing/Cch.c",
+                "Cuckoo_Hashing/CcH.c",
                 "Hash_table/Hash.c",
                 "Lista_Encadeada/List.c",
                 "-o", "programa",

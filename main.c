@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <time.h>
 #include "AVL/avl.h"
 #include "Cuckoo_Hashing/CcH.h"
 #include "Hash_table/Hash.h"
@@ -50,7 +49,6 @@ int main() {
 
     switch (opcao){
     case 1:
-        
         char linha[4096];
         Node *raiz = NULL;
 

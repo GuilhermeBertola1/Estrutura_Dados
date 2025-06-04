@@ -1,0 +1,31 @@
+version: "3.8"
+
+networks:
+  minha_rede:
+    driver: bridge
+    name: estrutura_dados_minha_rede
+
+services:
+  programa_c:
+    build:
+      context: .
+      dockerfile: Dockerfile.c
+    stdin_open: true       
+    tty: true              
+    volumes:
+      - ./dataset:/app/dataset
+    networks:
+      - minha_rede
+
+  streamlit_app:
+    build:
+      context: .
+      dockerfile: Dockerfile.streamlit
+    ports:
+      - "8501:8501"
+    depends_on:
+      - programa_c
+    volumes:
+      - ./dataset:/app/dataset
+    networks:
+      - minha_rede
