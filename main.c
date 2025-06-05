@@ -29,6 +29,10 @@ int main() {
     const char *reset = "\033[0m";
 
     printf("%s========================================%s\n", cyan, reset);
+    printf("%s Client rodando:http://localhost:8501/ %s\n", green, reset);
+    printf("%s========================================%s\n", cyan, reset);
+
+    printf("%s========================================%s\n", cyan, reset);
     printf("%s          Selecione a estrutura        %s\n", green, reset);
     printf("%s========================================%s\n", cyan, reset);
 

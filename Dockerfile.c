@@ -9,10 +9,10 @@ WORKDIR /app
 COPY main.c ./
 COPY AVL/ ./AVL
 COPY Cuckoo_Hashing/ ./Cuckoo_Hashing
-COPY Fenwick_Tree/ ./Fenwick_Tree
+COPY BM_tree/ ./BM_tree
 COPY Hash_table/ ./Hash_table
 COPY Lista_Encadeada/ ./Lista_Encadeada
-COPY Segment_Tree/ ./Segment_Tree
+COPY LSM_tree/ ./LSM_tree
 COPY Trie/ ./Trie
 
 # Compila o programa C
