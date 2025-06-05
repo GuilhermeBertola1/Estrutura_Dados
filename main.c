@@ -8,6 +8,7 @@
 #include "Cuckoo_Hashing/CcH.h"
 #include "Hash_table/Hash.h"
 #include "Lista_Encadeada/List.h"
+#include "LSM_tree/Lsm.h"
 
 int main() {
     FILE *f = fopen("dataset/ESK2033.csv", "r");
@@ -41,8 +42,8 @@ int main() {
     printf("%s[3]%s Tabela Hash\n", yellow, reset);
     printf("%s[4]%s Cuckoo Hashing\n", yellow, reset);
     printf("%s[5]%s Trie\n", yellow, reset);
-    printf("%s[6]%s Fenwickk Tree\n", yellow, reset);
-    printf("%s[7]%s Segment Tree\n", yellow, reset);
+    printf("%s[6]%s LSM Tree\n", yellow, reset);
+    printf("%s[7]%s B+ Tree\n", yellow, reset);
 
     printf("\n%sDigite a opcao desejada:%s ", blue, reset);
 
@@ -396,7 +397,7 @@ int main() {
         zmq_ctx_term(context);
         break;
     case 5:
-        // Inicializa socket ZeroMQ
+        
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
@@ -422,10 +423,64 @@ int main() {
         zmq_ctx_term(context);
         break;
     case 6:
+        char linha4[4096];    
+        fgets(linha4, sizeof(linha4), f);
 
+        while (fgets(linha4, sizeof(linha4), f)) {
+            Dados d1;
+            char *token = strtok(linha4, ",");
+            if (!token) continue;
 
+            strncpy(d1.data, token, sizeof(d1.data));
+            d1.data[sizeof(d1.data) - 1] = '\0';
 
-        // Inicializa socket ZeroMQ
+            // Avança tokens para preencher os campos conforme ordem e quantidade puladas no CSV
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.demanda_residual = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.demanda_contratada = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.importacoes = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.geracao_termica = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.geracao_despachavel = atof(token);
+
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.geracao_renovavel_total = atof(token);
+
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.capacidade_instalada = atof(token);
+
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.perdas_geracao_total = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            d1.carga_reduzida_manual = atof(token);
+
+            if (!inserir_dado(&d1)) {
+                fprintf(stderr, "Falha ao inserir registro: %s\n", d1.data);
+            }
+        }
+
+        fclose(f);
+        printf("Dados inseridos na LSM Tree.\n");
+
+        printar_dados_todos_arquivos("LSM_tree");
+
         while (1) {
             char buffer[4096];
             int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);

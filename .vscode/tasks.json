@@ -11,6 +11,7 @@
                 "Cuckoo_Hashing/CcH.c",
                 "Hash_table/Hash.c",
                 "Lista_Encadeada/List.c",
+                "LSM_tree/Lsm.c",
                 "-o", "programa",
                 "-IC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/include",
                 "-LC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/lib",
