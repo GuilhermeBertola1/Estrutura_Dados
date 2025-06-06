@@ -9,10 +9,11 @@ import sys
 URL_DOCKER_WIN = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
 INSTALLER_PATH = "DockerInstaller.exe"
 
-# URLs dos arquivos no GitHub
-URL_COMPOSE = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/docker-compose.yml"
-URL_DOCKERFILE_C = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/Dockerfile.c"
-URL_DOCKERFILE_PY = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/Dockerfile.streamlit"
+# Git
+URL_GIT_WIN = "https://github.com/git-for-windows/git/releases/download/v2.45.1.windows.1/Git-2.45.1-64-bit.exe"
+GIT_INSTALLER = "GitInstaller.exe"
+GIT_REPO = "https://github.com/GuilhermeBertola1/Estrutura_Dados.git"
+REPO_DIR = "Estrutura_Dados"
 
 def docker_instalado():
     return shutil.which("docker") is not None
@@ -58,35 +59,34 @@ def aguardar_docker_ativo():
     if docker_funcionando():
         print("✅ Docker está ativo!")
 
-def obter_diretorios():
-    if getattr(sys, 'frozen', False):
-        script_dir = os.path.dirname(sys.executable)
+def git_instalado():
+    return shutil.which("git") is not None
+
+def baixar_git():
+    print("📦 Baixando Git para Windows...")
+    urllib.request.urlretrieve(URL_GIT_WIN, GIT_INSTALLER)
+    print(f"✅ Instalador salvo como: {GIT_INSTALLER}")
+
+def instalar_git():
+    print("🛠️ Iniciando instalação do Git (modo silencioso)...")
+    subprocess.run([GIT_INSTALLER, "/VERYSILENT", "/NORESTART"], check=False)
+    print("⏳ Aguardando Git finalizar instalação...")
+    time.sleep(10)
+    os.environ["PATH"] += r";C:\Program Files\Git\cmd"
+
+def clonar_repositorio(destino=REPO_DIR):
+    if os.path.isdir(destino):
+        print("📁 Repositório já clonado.")
     else:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-
-    project_dir = os.path.abspath(os.path.join(script_dir, ".."))
-    return script_dir, project_dir
-
-def baixar_arquivo_se_nao_existir(url, caminho_destino):
-    if not os.path.isfile(caminho_destino):
-        print(f"📄 {os.path.basename(caminho_destino)} não encontrado. Baixando do GitHub...")
-        try:
-            urllib.request.urlretrieve(url, caminho_destino)
-            print(f"✅ {os.path.basename(caminho_destino)} baixado com sucesso.")
-        except Exception as e:
-            print(f"❌ Erro ao baixar {os.path.basename(caminho_destino)}: {e}")
-
-def verificar_ou_baixar_arquivos(project_dir):
-    baixar_arquivo_se_nao_existir(URL_COMPOSE, os.path.join(project_dir, "docker-compose.yml"))
-    baixar_arquivo_se_nao_existir(URL_DOCKERFILE_C, os.path.join(project_dir, "Dockerfile.c"))
-    baixar_arquivo_se_nao_existir(URL_DOCKERFILE_PY, os.path.join(project_dir, "Dockerfile.streamlit"))
+        print("📥 Clonando repositório do GitHub...")
+        subprocess.run(["git", "clone", GIT_REPO], check=True)
+        print("✅ Repositório clonado com sucesso.")
 
 def build_rodar_compose():
     print("🔧 Fazendo build de todos os serviços com Docker Compose...")
 
-    script_dir, project_dir = obter_diretorios()
-
-    verificar_ou_baixar_arquivos(project_dir)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_dir = os.path.join(script_dir, REPO_DIR)
 
     try:
         subprocess.run(
@@ -134,6 +134,13 @@ def main():
             print("⚠️ Docker instalado, mas não está rodando. Tentando iniciar Docker Desktop...")
             abrir_docker_desktop()
             aguardar_docker_ativo()
+
+    if not git_instalado():
+        baixar_git()
+        instalar_git()
+        input("🛠️ Após a instalação do Git, pressione ENTER para continuar...")
+
+    clonar_repositorio()
 
     if docker_funcionando():
         try:
