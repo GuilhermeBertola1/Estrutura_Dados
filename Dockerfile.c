@@ -21,5 +21,6 @@ RUN gcc main.c \
     Cuckoo_Hashing/CcH.c \
     Hash_table/Hash.c \
     Lista_Encadeada/List.c \
+    LSM_tree/Lsm.c \
     -o programa \
     -lzmq -lm
