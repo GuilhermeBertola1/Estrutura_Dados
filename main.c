@@ -489,11 +489,13 @@ int main() {
             buffer[strcspn(buffer, "\r\n")] = 0;
 
             char data_inicio[32], data_fim[32];
+            printf(data_inicio);
+            printf(data_fim);
             if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                buscar_intervalo_lsm(data_inicio, data_fim, &resposta_json);
                 zmq_send(responder, resposta_json, strlen(resposta_json), 0);
                 free(resposta_json);
             } else {

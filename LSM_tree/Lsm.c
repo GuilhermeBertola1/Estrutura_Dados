@@ -141,8 +141,8 @@ void buscar_intervalo_lsm(const char *inicio_str, const char *fim_str, char **sa
 
     usado += snprintf(json + usado, capacidade - usado, "[");
 
-    // Abrir diretório atual e buscar arquivos sstable
-    DIR *dir = opendir(".");
+    // Abrir diretório "LSM_tree/"
+    DIR *dir = opendir("LSM_tree");
     if (!dir) {
         perror("opendir");
         exit(EXIT_FAILURE);
@@ -153,7 +153,12 @@ void buscar_intervalo_lsm(const char *inicio_str, const char *fim_str, char **sa
 
     while ((entry = readdir(dir)) != NULL) {
         if (strncmp(entry->d_name, "sstable_", 8) == 0 && strstr(entry->d_name, ".dat")) {
-            FILE *f = fopen(entry->d_name, "rb");
+            // Montar o caminho completo do arquivo
+            char caminho[256];
+            printf(caminho);
+            snprintf(caminho, sizeof(caminho), "LSM_tree/%s", entry->d_name);
+
+            FILE *f = fopen(caminho, "rb");
             if (!f) continue;
 
             Dados d;
@@ -211,6 +216,54 @@ void buscar_intervalo_lsm(const char *inicio_str, const char *fim_str, char **sa
     }
 
     closedir(dir);
+
+    for (int i = 0; i < memtable_size; ++i) {
+        long long data_valor = datetime_para_inteiro_LSM(memtable[i].data);
+        if (data_valor >= inicio && data_valor <= fim) {
+            contagem++;
+            char item[1024];
+            int n = snprintf(item, sizeof(item),
+                "%s{\n"
+                "  \"data\": \"%s\",\n"
+                "  \"demanda_residual\": %.2f,\n"
+                "  \"demanda_contratada\": %.2f,\n"
+                "  \"geracao_despachavel\": %.2f,\n"
+                "  \"geracao_termica\": %.2f,\n"
+                "  \"importacoes\": %.2f,\n"
+                "  \"geracao_renovavel_total\": %.2f,\n"
+                "  \"carga_reduzida_manual\": %.2f,\n"
+                "  \"capacidade_instalada\": %.2f,\n"
+                "  \"perdas_geracao_total\": %.2f\n"
+                "}",
+                primeiro ? "" : ",\n",
+                memtable[i].data,
+                memtable[i].demanda_residual,
+                memtable[i].demanda_contratada,
+                memtable[i].geracao_despachavel,
+                memtable[i].geracao_termica,
+                memtable[i].importacoes,
+                memtable[i].geracao_renovavel_total,
+                memtable[i].carga_reduzida_manual,
+                memtable[i].capacidade_instalada,
+                memtable[i].perdas_geracao_total
+            );
+
+            while (usado + n + 1 >= capacidade) {
+                capacidade *= 2;
+                char *temp = realloc(json, capacidade);
+                if (!temp) {
+                    free(json);
+                    perror("realloc");
+                    exit(EXIT_FAILURE);
+                }
+                json = temp;
+            }
+
+            memcpy(json + usado, item, n);
+            usado += n;
+            primeiro = 0;
+        }
+    }
 
     usado += snprintf(json + usado, capacidade - usado, "\n]");
     json[usado] = '\0';
