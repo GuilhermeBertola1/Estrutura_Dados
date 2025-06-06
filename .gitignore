@@ -1,2 +1,4 @@
-*.exe
 *.spec
+*.exe
+
+!launcher.exe
