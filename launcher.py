@@ -9,7 +9,7 @@ import sys
 URL_DOCKER_WIN = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
 INSTALLER_PATH = "DockerInstaller.exe"
 
-# URL do docker-compose.yml no seu GitHub
+# URLs dos arquivos no GitHub
 URL_COMPOSE = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/docker-compose.yml"
 URL_DOCKERFILE_C = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/Dockerfile.c"
 URL_DOCKERFILE_PY = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/Dockerfile.streamlit"
@@ -67,29 +67,30 @@ def obter_diretorios():
     project_dir = os.path.abspath(os.path.join(script_dir, ".."))
     return script_dir, project_dir
 
-def verificar_ou_baixar_compose(compose_path):
-    if not os.path.isfile(compose_path):
-        print("📄 docker-compose.yml não encontrado. Baixando do GitHub...")
+def baixar_arquivo_se_nao_existir(url, caminho_destino):
+    if not os.path.isfile(caminho_destino):
+        print(f"📄 {os.path.basename(caminho_destino)} não encontrado. Baixando do GitHub...")
         try:
-            urllib.request.urlretrieve(URL_COMPOSE, compose_path)
-            print("✅ docker-compose.yml baixado com sucesso.")
+            urllib.request.urlretrieve(url, caminho_destino)
+            print(f"✅ {os.path.basename(caminho_destino)} baixado com sucesso.")
         except Exception as e:
-            print(f"❌ Erro ao baixar docker-compose.yml: {e}")
-            return False
-    return True
+            print(f"❌ Erro ao baixar {os.path.basename(caminho_destino)}: {e}")
+
+def verificar_ou_baixar_arquivos(project_dir):
+    baixar_arquivo_se_nao_existir(URL_COMPOSE, os.path.join(project_dir, "docker-compose.yml"))
+    baixar_arquivo_se_nao_existir(URL_DOCKERFILE_C, os.path.join(project_dir, "Dockerfile.c"))
+    baixar_arquivo_se_nao_existir(URL_DOCKERFILE_PY, os.path.join(project_dir, "Dockerfile.streamlit"))
 
 def build_rodar_compose():
     print("🔧 Fazendo build de todos os serviços com Docker Compose...")
 
     script_dir, project_dir = obter_diretorios()
-    compose_path = os.path.join(project_dir, "docker-compose.yml")
 
-    if not verificar_ou_baixar_compose(compose_path):
-        return
+    verificar_ou_baixar_arquivos(project_dir)
 
     try:
         subprocess.run(
-            ["docker", "compose", "-f", compose_path, "build"],
+            ["docker", "compose", "-f", "docker-compose.yml", "build"],
             check=True,
             cwd=project_dir
         )
@@ -98,7 +99,7 @@ def build_rodar_compose():
         print("🚀 Subindo todos os serviços em segundo plano...")
 
         subprocess.run(
-            ["docker", "compose", "-f", compose_path, "up", "-d"],
+            ["docker", "compose", "-f", "docker-compose.yml", "up", "-d"],
             check=True,
             cwd=project_dir
         )
@@ -106,7 +107,7 @@ def build_rodar_compose():
         print("🧑‍💻 Entrando no terminal interativo do programa_c...")
 
         subprocess.run(
-            ["docker", "compose", "-f", compose_path, "exec", "programa_c", "sh", "-c", "./programa; exec sh"],
+            ["docker", "compose", "-f", "docker-compose.yml", "exec", "programa_c", "sh", "-c", "./programa; exec sh"],
             check=True,
             cwd=project_dir
         )
