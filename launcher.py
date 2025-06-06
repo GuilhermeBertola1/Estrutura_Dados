@@ -82,11 +82,28 @@ def clonar_repositorio(destino=REPO_DIR):
         subprocess.run(["git", "clone", GIT_REPO], check=True)
         print("✅ Repositório clonado com sucesso.")
 
+def get_script_dir():
+    if getattr(sys, 'frozen', False):
+        # Executável PyInstaller
+        return os.path.dirname(sys.executable)
+    else:
+        # Script Python normal
+        return os.path.dirname(os.path.abspath(__file__))
+
 def build_rodar_compose():
     print("🔧 Fazendo build de todos os serviços com Docker Compose...")
 
-    script_dir = os.path.dirname(os.path.abspath(__file__))
+    script_dir = get_script_dir()
     project_dir = os.path.join(script_dir, REPO_DIR)
+
+    if not os.path.isdir(project_dir):
+        print(f"❌ Diretório do projeto não encontrado: {project_dir}")
+        return
+
+    compose_file_path = os.path.join(project_dir, "docker-compose.yml")
+    if not os.path.isfile(compose_file_path):
+        print(f"❌ Arquivo docker-compose.yml não encontrado em: {compose_file_path}")
+        return
 
     try:
         subprocess.run(
@@ -116,6 +133,7 @@ def build_rodar_compose():
 
     except subprocess.CalledProcessError as e:
         print("❌ Erro ao executar docker compose:", e)
+
 
 def main():
     if platform.system() != "Windows":
