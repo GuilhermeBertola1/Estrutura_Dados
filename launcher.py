@@ -9,8 +9,10 @@ import sys
 URL_DOCKER_WIN = "https://desktop.docker.com/win/main/amd64/Docker%20Desktop%20Installer.exe"
 INSTALLER_PATH = "DockerInstaller.exe"
 
+# URL do docker-compose.yml no seu GitHub
+URL_COMPOSE = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/docker-compose.yml"
+
 def docker_instalado():
-    """Verifica se o comando docker está disponível no PATH."""
     return shutil.which("docker") is not None
 
 def baixar_instalador():
@@ -23,7 +25,6 @@ def executar_instalador():
     subprocess.Popen([INSTALLER_PATH], shell=True)
 
 def abrir_docker_desktop():
-    """Tenta abrir o Docker Desktop automaticamente."""
     docker_desktop_path = r"C:\Program Files\Docker\Docker\Docker Desktop.exe"
     if os.path.isfile(docker_desktop_path):
         try:
@@ -36,7 +37,6 @@ def abrir_docker_desktop():
         print("Por favor, abra o Docker Desktop manualmente.")
 
 def docker_funcionando():
-    """Verifica se o daemon Docker está respondendo."""
     try:
         subprocess.run(["docker", "info"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
         return True
@@ -50,16 +50,14 @@ def aguardar_docker_ativo():
         tentativas += 1
         print(f"🔄 Docker não está pronto (tentativa {tentativas})... tentando novamente em 5 segundos.")
         time.sleep(5)
-        if tentativas >= 30:  # aguarda até 2.5 minutos
+        if tentativas >= 30:
             print("⚠️ Tempo limite atingido. Certifique-se que o Docker Desktop está aberto e funcionando.")
             break
     if docker_funcionando():
         print("✅ Docker está ativo!")
 
 def obter_diretorios():
-    """Retorna os diretórios corretos considerando se é PyInstaller ou script .py"""
     if getattr(sys, 'frozen', False):
-        # Executável PyInstaller
         script_dir = os.path.dirname(sys.executable)
     else:
         script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -67,18 +65,27 @@ def obter_diretorios():
     project_dir = os.path.abspath(os.path.join(script_dir, ".."))
     return script_dir, project_dir
 
+def verificar_ou_baixar_compose(compose_path):
+    if not os.path.isfile(compose_path):
+        print("📄 docker-compose.yml não encontrado. Baixando do GitHub...")
+        try:
+            urllib.request.urlretrieve(URL_COMPOSE, compose_path)
+            print("✅ docker-compose.yml baixado com sucesso.")
+        except Exception as e:
+            print(f"❌ Erro ao baixar docker-compose.yml: {e}")
+            return False
+    return True
+
 def build_rodar_compose():
     print("🔧 Fazendo build de todos os serviços com Docker Compose...")
 
     script_dir, project_dir = obter_diretorios()
     compose_path = os.path.join(project_dir, "docker-compose.yml")
 
-    if not os.path.isfile(compose_path):
-        print(f"❌ Arquivo docker-compose.yml não encontrado em {compose_path}")
+    if not verificar_ou_baixar_compose(compose_path):
         return
 
     try:
-        # Build de todos os serviços
         subprocess.run(
             ["docker", "compose", "-f", compose_path, "build"],
             check=True,
