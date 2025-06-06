@@ -11,6 +11,8 @@ INSTALLER_PATH = "DockerInstaller.exe"
 
 # URL do docker-compose.yml no seu GitHub
 URL_COMPOSE = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/docker-compose.yml"
+URL_DOCKERFILE_C = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/Dockerfile.c"
+URL_DOCKERFILE_PY = "https://raw.githubusercontent.com/GuilhermeBertola1/Estrutura_Dados/main/Dockerfile.streamlit"
 
 def docker_instalado():
     return shutil.which("docker") is not None
