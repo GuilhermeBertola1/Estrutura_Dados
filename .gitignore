@@ -2,3 +2,4 @@
 *.exe
 
 !launcher.exe
+dist/Estrutura_Dados/
