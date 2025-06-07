@@ -9,7 +9,7 @@ WORKDIR /app
 COPY main.c ./
 COPY AVL/ ./AVL
 COPY Cuckoo_Hashing/ ./Cuckoo_Hashing
-#COPY BM_tree/ ./BM_tree
+COPY BM_tree/ ./BM_tree
 COPY Hash_table/ ./Hash_table
 COPY Lista_Encadeada/ ./Lista_Encadeada
 COPY LSM_tree/ ./LSM_tree
