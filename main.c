@@ -9,6 +9,7 @@
 #include "Hash_table/Hash.h"
 #include "Lista_Encadeada/List.h"
 #include "LSM_tree/Lsm.h"
+#include "BM_tree/Bm.h"
 
 int main() {
     FILE *f = fopen("dataset/ESK2033.csv", "r");
@@ -509,7 +510,87 @@ int main() {
         break;
 
     case 7:
-        
+        char linha10[4096];
+        BPlusNode *raizBM = NULL; 
+
+        fgets(linha10, sizeof(linha10), f);
+
+        while (fgets(linha10, sizeof(linha10), f)) {
+            Bdados b1;
+            char *token = strtok(linha10, ",");
+            if (!token) continue;
+
+            strncpy(b1.data, token, sizeof(b1.data));
+            b1.data[sizeof(b1.data) - 1] = '\0';
+
+            // Avança tokens para preencher os campos conforme ordem e quantidade puladas no CSV
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.demanda_residual = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.demanda_contratada = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.importacoes = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.geracao_termica = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.geracao_despachavel = atof(token);
+
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.geracao_renovavel_total = atof(token);
+
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.capacidade_instalada = atof(token);
+
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.perdas_geracao_total = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            b1.carga_reduzida_manual = atof(token);
+
+            inserir_bplus(&raizBM, b1);
+        }
+
+        imprimir_bplus(raizBM);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            printf(data_inicio);
+            printf(data_fim);
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo_bplus_json(raizBM, data_inicio, data_fim, &resposta_json);
+                printf("JSON gerado:\n%s\n", resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
         break;
     default:
         break;

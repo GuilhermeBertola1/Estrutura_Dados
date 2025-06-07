@@ -22,5 +22,6 @@ RUN gcc main.c \
     Hash_table/Hash.c \
     Lista_Encadeada/List.c \
     LSM_tree/Lsm.c \
+    BM_tree/Bm.c \
     -o programa \
     -lzmq -lm
