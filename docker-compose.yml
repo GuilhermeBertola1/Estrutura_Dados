@@ -1,22 +1,21 @@
 version: "3.8"
 
-networks:
-  minha_rede:
-    driver: bridge
-    name: estrutura_dados_minha_rede
-
 services:
   programa_c:
     build:
       context: .
       dockerfile: Dockerfile.c
-    stdin_open: true       
-    tty: true              
+    stdin_open: true
+    tty: true
     volumes:
       - ./dataset:/app/dataset
     networks:
       - minha_rede
-    cpus: 1
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 200m
 
   streamlit_app:
     build:
@@ -30,4 +29,13 @@ services:
       - ./dataset:/app/dataset
     networks:
       - minha_rede
-    cpus: 1
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 600m
+
+networks:
+  minha_rede:
+    driver: bridge
+    name: estrutura_dados_minha_rede
