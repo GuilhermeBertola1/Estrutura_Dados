@@ -46,8 +46,8 @@ if st.button("🔄 Requisitar dados por intervalo"):
     st.write("🔌 Conectando ao servidor ZeroMQ...")
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
-    socket.connect("tcp://programa_c:5555")
-    #socket.connect("tcp://localhost:5555")
+    #socket.connect("tcp://programa_c:5555")
+    socket.connect("tcp://localhost:5555")
 
     # Envia as strings formatadas no formato exato
     msg = f"{data_hora_inicio.strftime('%Y-%m-%d %I:00:00 %p')},{data_hora_fim.strftime('%Y-%m-%d %I:00:00 %p')}"
@@ -106,6 +106,19 @@ if st.session_state["dados"]:
     )
 
     st.altair_chart(grafico, use_container_width=True)
+
+    if st.session_state.get("estatisticas") is not None:
+        estats = st.session_state["estatisticas"]
+        df_estats = pd.DataFrame(estats).T
+        df_estats.rename(columns={
+            "media": "Média",
+            "moda": "Moda",
+            "mediana": "Mediana",
+            "variancia": "Variância",
+            "desvio_padrao": "Desvio Padrão"
+        }, inplace=True)
+        st.write("📊 Estatísticas descritivas (fornecidas pelo servidor):")
+        st.dataframe(df_estats)
 
     # Caixa para predição
     # Caixa para predição
