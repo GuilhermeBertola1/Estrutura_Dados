@@ -12,7 +12,7 @@ services:
     networks:
       - minha_rede
     cpus: 1.0
-    mem_limit: 128m
+    mem_limit: 200m
 
   streamlit_app:
     build:
