@@ -284,7 +284,7 @@ int main() {
         }
 
         fclose(f);
-        printf("Dados inseridos na tabela Cuckoo Hashing.\n");
+        printf("Dados inseridos na tabela Hashing.\n");
 
         // Inicializa socket ZeroMQ
         while (1) {
