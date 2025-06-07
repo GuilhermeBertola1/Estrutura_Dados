@@ -1,4 +1,4 @@
-version: "3.8"
+version: "2.4"
 
 services:
   programa_c:
@@ -11,11 +11,8 @@ services:
       - ./dataset:/app/dataset
     networks:
       - minha_rede
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 200m
+    cpus: 1.0
+    mem_limit: 128m
 
   streamlit_app:
     build:
@@ -29,11 +26,8 @@ services:
       - ./dataset:/app/dataset
     networks:
       - minha_rede
-    deploy:
-      resources:
-        limits:
-          cpus: '1.0'
-          memory: 600m
+    cpus: 1.0
+    mem_limit: 600m
 
 networks:
   minha_rede:
