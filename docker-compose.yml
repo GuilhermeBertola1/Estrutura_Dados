@@ -8,7 +8,6 @@ networks:
 services:
   programa_c:
     build:
-      cpus: 1
       context: .
       dockerfile: Dockerfile.c
     stdin_open: true       
@@ -17,10 +16,10 @@ services:
       - ./dataset:/app/dataset
     networks:
       - minha_rede
+    cpus: 1
 
   streamlit_app:
     build:
-      cpus: 1
       context: .
       dockerfile: Dockerfile.streamlit
     ports:
@@ -31,3 +30,4 @@ services:
       - ./dataset:/app/dataset
     networks:
       - minha_rede
+    cpus: 1
