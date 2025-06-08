@@ -13,6 +13,8 @@
                 "Lista_Encadeada/List.c",
                 "LSM_tree/Lsm.c",
                 "BM_tree/Bm.c",
+                "Trie/Trie.c",
+                "Comp_list/CmpList.c",
                 "-o", "programa",
                 "-IC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/include",
                 "-LC:/Users/guilh/vcpkg/installed/x64-mingw-dynamic/lib",

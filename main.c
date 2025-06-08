@@ -10,6 +10,8 @@
 #include "Lista_Encadeada/List.h"
 #include "LSM_tree/Lsm.h"
 #include "BM_tree/Bm.h"
+#include "Trie/Trie.h"
+#include "Comp_list/CmpList.h"
 
 int main() {
     FILE *f = fopen("dataset/ESK2033.csv", "r");
@@ -45,6 +47,7 @@ int main() {
     printf("%s[5]%s Trie\n", yellow, reset);
     printf("%s[6]%s LSM Tree\n", yellow, reset);
     printf("%s[7]%s B+ Tree\n", yellow, reset);
+    printf("%s[8]%s Lista encadeada compactada\n", yellow, reset);
 
     printf("\n%sDigite a opcao desejada:%s ", blue, reset);
 
@@ -398,6 +401,62 @@ int main() {
         zmq_ctx_term(context);
         break;
     case 5:
+        Trie* trie = criar_trie();
+
+        char linha20[4096];
+        fgets(linha20, sizeof(linha20), f);
+
+        while (fgets(linha20, sizeof(linha20), f)) {
+            Entrada2 t1;
+            char *token = strtok(linha20, ",");
+            if (!token) continue;
+
+            strncpy(t1.data, token, sizeof(t1.data));
+            t1.data[sizeof(t1.data) - 1] = '\0';
+
+            // Avança tokens para preencher os campos conforme ordem e quantidade puladas no CSV
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.demanda_residual = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.demanda_contratada = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.importacoes = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.geracao_termica = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.geracao_despachavel = atof(token);
+
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.geracao_renovavel_total = atof(token);
+
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.capacidade_instalada = atof(token);
+
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.perdas_geracao_total = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            t1.carga_reduzida_manual = atof(token);
+
+            t1.ocupado = 1;
+
+            inserir_trie_temporal(trie, t1);
+        }
+        printf("\n==== Dados na Trie Temporal ====\n");
+        imprimir_trie(trie);
         
         while (1) {
             char buffer[4096];
@@ -411,7 +470,7 @@ int main() {
                 char *resposta_json;
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+                buscar_intervalo_trie(trie, data_inicio, data_fim, &resposta_json);
                 zmq_send(responder, resposta_json, strlen(resposta_json), 0);
                 free(resposta_json);
             } else {
@@ -591,6 +650,92 @@ int main() {
 
         zmq_close(responder);
         zmq_ctx_term(context);
+        break;
+
+    case 8:
+        Bloco* CmpLISTA = NULL;
+        CmpLISTA = criar_bloco();
+        char linha90[4096];
+
+        fgets(linha90, sizeof(linha90), f);
+
+        while (fgets(linha90, sizeof(linha90), f)) {
+            CompList g1;
+            char *token = strtok(linha90, ",");
+            if (!token) continue;
+
+            strncpy(g1.data, token, sizeof(g1.data));
+            g1.data[sizeof(g1.data) - 1] = '\0';
+
+            // Avança tokens para preencher os campos conforme ordem e quantidade puladas no CSV
+            for (int i = 0; i < 5; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.demanda_residual = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.demanda_contratada = atof(token);
+
+            token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.importacoes = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.geracao_termica = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.geracao_despachavel = atof(token);
+
+            for (int i = 0; i < 6; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.geracao_renovavel_total = atof(token);
+
+            for (int i = 0; i < 7; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.capacidade_instalada = atof(token);
+
+            for (int i = 0; i < 3; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.perdas_geracao_total = atof(token);
+
+            for (int i = 0; i < 2; i++) token = strtok(NULL, ",");
+            if (!token) continue;
+            g1.carga_reduzida_manual = atof(token);
+
+            inserir_CMP(&CmpLISTA, g1);
+        }
+
+        imprimir_lista_CMP(CmpLISTA);
+
+        while (1) {
+            char buffer[4096];
+            int bytes = zmq_recv(responder, buffer, sizeof(buffer) - 1, 0);
+            if (bytes == -1) break;
+            buffer[bytes] = '\0';
+            buffer[strcspn(buffer, "\r\n")] = 0;
+
+            char data_inicio[32], data_fim[32];
+            printf(data_inicio);
+            printf(data_fim);
+            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+                char *resposta_json;
+                printf(data_inicio);
+                printf(data_fim);
+                buscar_intervalo_lista_CMP(CmpLISTA, data_inicio, data_fim, &resposta_json);
+                printf("JSON gerado:\n%s\n", resposta_json);
+                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                free(resposta_json);
+            } else {
+                const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
+                zmq_send(responder, msg_erro, strlen(msg_erro), 0);
+            }
+        }
+
+        zmq_close(responder);
+        zmq_ctx_term(context);
+
         break;
     default:
         break;
