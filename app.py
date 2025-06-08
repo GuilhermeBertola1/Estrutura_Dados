@@ -46,8 +46,8 @@ if st.button("🔄 Requisitar dados por intervalo"):
     st.write("🔌 Conectando ao servidor ZeroMQ...")
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
-    #socket.connect("tcp://programa_c:5555")
-    socket.connect("tcp://localhost:5555")
+    socket.connect("tcp://programa_c:5555")
+    #socket.connect("tcp://localhost:5555")
 
     # Envia as strings formatadas no formato exato
     msg = f"{data_hora_inicio.strftime('%Y-%m-%d %I:00:00 %p')},{data_hora_fim.strftime('%Y-%m-%d %I:00:00 %p')}"
