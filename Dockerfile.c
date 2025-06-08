@@ -13,7 +13,8 @@ COPY BM_tree/ ./BM_tree
 COPY Hash_table/ ./Hash_table
 COPY Lista_Encadeada/ ./Lista_Encadeada
 COPY LSM_tree/ ./LSM_tree
-#COPY Trie/ ./Trie
+COPY Trie/ ./Trie
+COPY Comp_list ./Comp_list
 
 # Compila o programa C
 RUN gcc main.c \
@@ -23,5 +24,7 @@ RUN gcc main.c \
     Lista_Encadeada/List.c \
     LSM_tree/Lsm.c \
     BM_tree/Bm.c \
+    Trie/Trie.c \
+    Comp_list/CmpList.c \
     -o programa \
     -lzmq -lm
