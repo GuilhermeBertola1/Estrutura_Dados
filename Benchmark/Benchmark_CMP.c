@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include "Comp_list/CmpList.h"
+#include "CmpList.h"
 
 int main(){
     FILE *f = fopen("dataset/ESK2033.csv", "r");

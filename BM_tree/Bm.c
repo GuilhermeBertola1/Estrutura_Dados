@@ -292,7 +292,7 @@ void buscar_intervalo_bplus_json(BPlusNode *raiz, const char *inicio_str, const 
                 ListaDados *lista = &no->dados[i];
                 for (int j = 0; j < lista->tamanho; j++) {
                     Bdados *d = &lista->itens[j];
-                    long long data_valor = datetime_para_inteiro_LSM(d->data);
+                    long long data_valor = datetime_para_inteiro_BM(d->data);
                     if (data_valor >= inicio && data_valor <= fim) {
                         char item[1024];
                         int n = snprintf(item, sizeof(item),

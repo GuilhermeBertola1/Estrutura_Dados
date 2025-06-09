@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include "Cuckoo_Hashing/CcH.h"
+#include "CcH.h"
 
 int main(){
     FILE *f = fopen("dataset/ESK2033.csv", "r");

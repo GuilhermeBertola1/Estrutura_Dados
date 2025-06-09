@@ -8,6 +8,7 @@
         "list.h": "c",
         "trie.h": "c",
         "lsm.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "cch.h": "c"
     }
 }

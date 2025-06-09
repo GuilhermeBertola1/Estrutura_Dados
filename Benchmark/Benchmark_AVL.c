@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
-#include "AVL/avl.h"
+#include "avl.h"
 
 int main(){
     FILE *f = fopen("dataset/ESK2033.csv", "r");
