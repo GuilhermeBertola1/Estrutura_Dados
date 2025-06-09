@@ -1,6 +1,5 @@
 #!/bin/sh
 echo "========== Benchmark AVL =========="
-./AVL_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./AVL_benchmark 2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -8,7 +7,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./AVL_benchmark 2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark BM =========="
-./BM_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./BM_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -16,7 +14,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./BM_benchmark  2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark Cuckoo Hash =========="
-./CCH_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./CCH_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -24,7 +21,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./CCH_benchmark  2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark Compact List =========="
-./CMP_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./CMP_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -32,7 +28,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./CMP_benchmark  2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark Hash Table =========="
-./HT_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./HT_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -40,7 +35,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./HT_benchmark  2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark LSM Tree =========="
-./LSM_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./LSM_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -48,7 +42,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./LSM_benchmark  2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark Lista Encadeada =========="
-./LT_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./LT_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
@@ -56,7 +49,6 @@ valgrind --tool=massif --massif-out-file=/dev/stdout ./LT_benchmark  2>&1 | \
 echo "-----------------------------------"
 
 echo "========== Benchmark Trie =========="
-./TRIE_benchmark
 valgrind --tool=massif --massif-out-file=/dev/stdout ./TRIE_benchmark  2>&1 | \
   grep mem_heap_B= | sed 's/mem_heap_B=//' | sort -nr | head -1 | \
   xargs -I{} echo "Pico maximo memoria heap: {} bytes"
