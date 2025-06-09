@@ -53,5 +53,6 @@ void inserir_bplus(BPlusNode **raiz, Bdados valor);
 void imprimir_bplus(BPlusNode *raiz);
 long long datetime_para_inteiro_LSM(const char *datetime);
 void buscar_intervalo_bplus_json(BPlusNode *raiz, const char *inicio_str, const char *fim_str, char **saida);
+void liberar_bplus(BPlusNode *raiz);
 
 #endif

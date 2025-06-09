@@ -234,3 +234,10 @@ void buscar_intervalo(Node *raiz, const char *data_inicio, const char *data_fim,
 
     *saida = tmp_buffer; // Retorna ponteiro para o buffer alocado
 }
+
+void liberar_avl(Node *raiz) {
+    if (raiz == NULL) return;
+    liberar_avl(raiz->esq);
+    liberar_avl(raiz->dir);
+    free(raiz);
+}

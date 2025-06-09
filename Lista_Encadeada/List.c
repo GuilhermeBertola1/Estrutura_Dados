@@ -237,3 +237,13 @@ void desvio(NodeList* head, const char* data_inicio, const char* data_fim, Estat
     est->dp_perdas_geracao_total = sqrt(ssd_perdas_geracao_total / est->n);
     est->dp_capacidade_instalada = sqrt(ssd_capacidade_instalada / est->n);
 }
+
+void liberar_lista(NodeList** head) {
+    NodeList* atual = *head;
+    while (atual != NULL) {
+        NodeList* proximo = atual->next;
+        free(atual);
+        atual = proximo;
+    }
+    *head = NULL;
+}

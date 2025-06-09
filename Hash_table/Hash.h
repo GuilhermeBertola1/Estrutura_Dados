@@ -31,5 +31,6 @@ int removerHash_linear(const char *chave);
 long long datetime_para_inteiro_linear(const char *data_str);
 void buscar_intervalo_linear(const char *inicio_str, const char *fim_str, char **saida);
 void estatisticasHash();
+void liberarHashLinear();
 
 #endif

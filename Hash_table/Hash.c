@@ -229,3 +229,12 @@ void estatisticasHash() {
     else
         printf("Nenhum dado disponível.\n");
 }
+
+void liberarHashLinear() {
+    if (hashLinear) {
+        free(hashLinear);
+        hashLinear = NULL;
+        TABLE_SIZE = 0;
+        qtd_elementos = 0;
+    }
+}

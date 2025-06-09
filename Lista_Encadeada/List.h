@@ -57,5 +57,6 @@ void buscar_intervalo_list(const char *inicio_str, const char *fim_str, char **s
 void imprimir_lista(NodeList* no);
 void media(NodeList* head, const char* data_inicio, const char* data_fim, Estatisticas* est);
 void desvio(NodeList* head, const char* data_inicio, const char* data_fim, Estatisticas* est);
+void liberar_lista(NodeList** head);
 
 #endif 

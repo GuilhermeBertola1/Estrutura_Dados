@@ -6,6 +6,8 @@
         "stdlib.h": "c",
         "zmq.h": "c",
         "list.h": "c",
-        "trie.h": "c"
+        "trie.h": "c",
+        "lsm.h": "c",
+        "time.h": "c"
     }
 }

@@ -36,5 +36,6 @@ void imprimir_AVL(Node *raiz);
 
 long long datetime_para_inteiro(const char *datetime);
 void buscar_intervalo(Node *raiz, const char *data_inicio, const char *data_fim, char **saida);
+void liberar_avl(Node *raiz);
 
 #endif
