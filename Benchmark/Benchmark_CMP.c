@@ -74,5 +74,5 @@ int main(){
     end = clock();
     printf("Tempo busca Compact List: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
     free(resposta_json);
-    liberar_lista(CmpLISTA);
+    liberar_lista_CMP(CmpLISTA);
 }

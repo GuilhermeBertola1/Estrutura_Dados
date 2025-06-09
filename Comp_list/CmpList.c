@@ -63,7 +63,7 @@ void imprimir_lista_CMP(Bloco* lista) {
     }
 }
 
-void liberar_lista(Bloco* lista) {
+void liberar_lista_CMP(Bloco* lista) {
     Bloco* atual = lista;
     while (atual != NULL) {
         Bloco* temp = atual;

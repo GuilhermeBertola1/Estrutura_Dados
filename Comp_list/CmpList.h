@@ -27,7 +27,7 @@ typedef struct Bloco {
 Bloco* criar_bloco();
 void inserir_CMP(Bloco** lista, CompList dado);
 void imprimir_lista_CMP(Bloco* lista);
-void liberar_lista(Bloco* lista);
+void liberar_lista_CMP(Bloco* lista);
 long long datetime_para_inteiro_CMP(const char *datetime);
 void buscar_intervalo_lista_CMP(Bloco *lista, const char *inicio_str, const char *fim_str, char **saida);
 
