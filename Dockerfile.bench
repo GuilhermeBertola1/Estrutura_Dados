@@ -1,11 +1,11 @@
 FROM debian:bookworm-slim
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
+# Instala compilador e dependências
+RUN apt update && apt install -y build-essential
 
 WORKDIR /app
 
+# Copia todos os diretórios com os códigos e headers
 COPY Benchmark/ ./Benchmark
 COPY AVL/ ./AVL
 COPY Cuckoo_Hashing/ ./Cuckoo_Hashing
@@ -14,18 +14,20 @@ COPY Hash_table/ ./Hash_table
 COPY Lista_Encadeada/ ./Lista_Encadeada
 COPY LSM_tree/ ./LSM_tree
 COPY Trie/ ./Trie
-COPY Comp_list ./Comp_list
+COPY Comp_list/ ./Comp_list
 
-RUN gcc -o AVL_benchmark Benchmark/Benchmark_AVL.c AVL/avl.c
-RUN gcc -o BM_benchmark Benchmark/Benchmark_BM.c BM_tree/Bm.c
-RUN gcc -o CCH_benchmark Benchmark/Benchmark_CCH.c Cuckoo_Hashing/CcH.c
-RUN gcc -o CMP_benchmark Benchmark/Benchmark_CMP.c Comp_list/CmpList.c
-RUN gcc -o HT_benchmark Benchmark/Benchmark_HT.c Hash_table/Hash.c
-RUN gcc -o LSM_benchmark Benchmark/Benchmark_LSM.c LSM_tree/Lsm.c
-RUN gcc -o LT_benchmark Benchmark/Benchmark_LT.c Lista_Encadeada/List.c
-RUN gcc -o TRIE_benchmark Benchmark/Benchmark_TRIE.c Trie/Trie.c
+RUN gcc -I AVL Benchmark/Benchmark_AVL.c AVL/avl.c -o AVL_benchmark && \
+    gcc -I BM_tree Benchmark/Benchmark_BM.c BM_tree/Bm.c -o BM_benchmark && \
+    gcc -I Cuckoo_Hashing Benchmark/Benchmark_CCH.c Cuckoo_Hashing/CcH.c -o CCH_benchmark && \
+    gcc -I Comp_list Benchmark/Benchmark_CMP.c Comp_list/CmpList.c -o CMP_benchmark && \
+    gcc -I Hash_table Benchmark/Benchmark_HT.c Hash_table/Hash.c -o HT_benchmark && \
+    gcc -I LSM_tree Benchmark/Benchmark_LSM.c LSM_tree/Lsm.c -o LSM_benchmark && \
+    gcc -I Lista_Encadeada Benchmark/Benchmark_LT.c Lista_Encadeada/List.c -o LT_benchmark && \
+    gcc -I Trie Benchmark/Benchmark_TRIE.c Trie/Trie.c -o TRIE_benchmark
+
 
 COPY run_all.sh .
+
 RUN chmod +x run_all.sh
 
 CMD ["./run_all.sh"]
