@@ -20,14 +20,14 @@ int in(NodeList** head, EletricDates *dado) {
 
     if (*head == NULL) {
         *head = novo;
-        printf("Inserido como primeiro nó.\n");
+        //printf("Inserido como primeiro nó.\n");
     } else {
         NodeList* atual = *head;
         while (atual->next != NULL) {
             atual = atual->next;
         }
         atual->next = novo;
-        printf("Inserido no final da lista.\n");
+        //printf("Inserido no final da lista.\n");
     }
     return 1;
 }
