@@ -35,6 +35,7 @@ services:
       dockerfile: Dockerfile.bench
     stdin_open: true
     tty: true
+    privileged: true
     volumes:
       - ./dataset:/app/dataset
     networks:

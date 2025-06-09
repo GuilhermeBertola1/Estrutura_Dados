@@ -1,7 +1,7 @@
 FROM debian:bookworm-slim
 
 # Instala compilador e dependências
-RUN apt update && apt install -y build-essential dos2unix
+RUN apt update && apt install -y build-essential dos2unix time linux-perf valgrind
 
 WORKDIR /app
 
