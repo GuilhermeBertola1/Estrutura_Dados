@@ -32,7 +32,7 @@ services:
   benchmark:
     build:
       context: .
-      dockerfile: Dockerfile.benchmark
+      dockerfile: Dockerfile.bench
     stdin_open: true
     tty: true
     volumes:
