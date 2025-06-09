@@ -1,1 +1,31 @@
 FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY Benchmark/ ./Benchmark
+COPY AVL/ ./AVL
+COPY Cuckoo_Hashing/ ./Cuckoo_Hashing
+COPY BM_tree/ ./BM_tree
+COPY Hash_table/ ./Hash_table
+COPY Lista_Encadeada/ ./Lista_Encadeada
+COPY LSM_tree/ ./LSM_tree
+COPY Trie/ ./Trie
+COPY Comp_list ./Comp_list
+
+RUN gcc -o AVL_benchmark Benchmark/Benchmark_AVL.c AVL/avl.c
+RUN gcc -o BM_benchmark Benchmark/Benchmark_BM.c BM_tree/Bm.c
+RUN gcc -o CCH_benchmark Benchmark/Benchmark_CCH.c Cuckoo_Hashing/CcH.c
+RUN gcc -o CMP_benchmark Benchmark/Benchmark_CMP.c Comp_list/CmpList.c
+RUN gcc -o HT_benchmark Benchmark/Benchmark_HT.c Hash_table/Hash.c
+RUN gcc -o LSM_benchmark Benchmark/Benchmark_LSM.c LSM_tree/Lsm.c
+RUN gcc -o LT_benchmark Benchmark/Benchmark_LT.c Lista_Encadeada/List.c
+RUN gcc -o TRIE_benchmark Benchmark/Benchmark_TRIE.c Trie/Trie.c
+
+COPY run_all.sh .
+RUN chmod +x run_all.sh
+
+CMD ["./run_all.sh"]

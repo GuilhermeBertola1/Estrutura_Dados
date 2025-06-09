@@ -1,0 +1,9 @@
+#!/bin/sh
+./AVL_benchmark
+./BM_benchmark
+./CCH_benchmark
+./CMP_benchmark
+./HT_benchmark
+./LSM_benchmark
+./LT_benchmark
+./TRIE_benchmark

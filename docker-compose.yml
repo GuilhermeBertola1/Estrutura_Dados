@@ -29,6 +29,19 @@ services:
     cpus: 1.0
     mem_limit: 500m
 
+  benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile.benchmark
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./dataset:/app/dataset
+    networks:
+      - minha_rede
+    cpus: 1.0
+    mem_limit: 310m
+
 networks:
   minha_rede:
     driver: bridge
