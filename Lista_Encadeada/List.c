@@ -16,7 +16,7 @@ int in(NodeList** head, EletricDates *dado) {
     novo->dado = *dado;
     novo->next = NULL;
 
-    printf("Inserindo data: %s\n", novo->dado.data); // debug
+    //printf("Inserindo data: %s\n", novo->dado.data); // debug
 
     if (*head == NULL) {
         *head = novo;
@@ -80,7 +80,7 @@ void buscar_intervalo_list(const char *inicio_str, const char *fim_str, char **s
     int contagem = 0;
     while (atual != NULL) {
         long long data_valor = datetime_para_inteiro_list(atual->dado.data);
-        printf("Checando data %s (%lld)\n", atual->dado.data, data_valor);
+        //printf("Checando data %s (%lld)\n", atual->dado.data, data_valor);
 
         if (data_valor >= inicio && data_valor <= fim) {
             contagem++;
