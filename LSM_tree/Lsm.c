@@ -269,7 +269,7 @@ void buscar_intervalo_lsm(const char *inicio_str, const char *fim_str, char **sa
     json[usado] = '\0';
 
     *saida = json;
-    printf("Itens encontrados no intervalo: %d\n", contagem);
+    //printf("Itens encontrados no intervalo: %d\n", contagem);
 }
 
 int eh_arquivo_sstable(const char *nome) {

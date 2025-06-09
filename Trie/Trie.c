@@ -160,7 +160,7 @@ void buscar_intervalo_trie(Trie *trie, const char *inicio_str, const char *fim_s
     long long inicio = datetime_para_inteiro_TRIE(inicio_str);
     long long fim = datetime_para_inteiro_TRIE(fim_str);
 
-    printf("Intervalo: %lld - %lld\n", inicio, fim);
+    //printf("Intervalo: %lld - %lld\n", inicio, fim);
 
     size_t capacidade = 8192;
     size_t usado = 0;
@@ -181,6 +181,6 @@ void buscar_intervalo_trie(Trie *trie, const char *inicio_str, const char *fim_s
     usado += snprintf(json + usado, capacidade - usado, "\n]");
     json[usado] = '\0';
 
-    printf("Itens encontrados: %d\n", contagem);
+    //printf("Itens encontrados: %d\n", contagem);
     *saida = json;
 }
