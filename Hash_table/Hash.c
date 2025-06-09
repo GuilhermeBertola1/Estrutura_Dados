@@ -72,7 +72,7 @@ void rehash_linear() {
     }
 
     free(old_table);
-    printf("Rehash realizado. Novo tamanho: %d\n", TABLE_SIZE);
+    //printf("Rehash realizado. Novo tamanho: %d\n", TABLE_SIZE);
 }
 
 
