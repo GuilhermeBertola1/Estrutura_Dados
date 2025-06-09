@@ -16,15 +16,14 @@ COPY LSM_tree/ ./LSM_tree
 COPY Trie/ ./Trie
 COPY Comp_list/ ./Comp_list
 
-RUN gcc -I AVL Benchmark/Benchmark_AVL.c AVL/avl.c -o AVL_benchmark && \
-    gcc -I BM_tree Benchmark/Benchmark_BM.c BM_tree/Bm.c -o BM_benchmark && \
-    gcc -I Cuckoo_Hashing Benchmark/Benchmark_CCH.c Cuckoo_Hashing/CcH.c -o CCH_benchmark && \
-    gcc -I Comp_list Benchmark/Benchmark_CMP.c Comp_list/CmpList.c -o CMP_benchmark && \
-    gcc -I Hash_table Benchmark/Benchmark_HT.c Hash_table/Hash.c -o HT_benchmark && \
-    gcc -I LSM_tree Benchmark/Benchmark_LSM.c LSM_tree/Lsm.c -o LSM_benchmark && \
-    gcc -I Lista_Encadeada Benchmark/Benchmark_LT.c Lista_Encadeada/List.c -o LT_benchmark && \
-    gcc -I Trie Benchmark/Benchmark_TRIE.c Trie/Trie.c -o TRIE_benchmark
-
+RUN gcc -I AVL Benchmark/Benchmark_AVL.c AVL/avl.c -o AVL_benchmark -lm && \
+    gcc -I BM_tree Benchmark/Benchmark_BM.c BM_tree/Bm.c -o BM_benchmark -lm && \
+    gcc -I Cuckoo_Hashing Benchmark/Benchmark_CCH.c Cuckoo_Hashing/CcH.c -o CCH_benchmark -lm && \
+    gcc -I Comp_list Benchmark/Benchmark_CMP.c Comp_list/CmpList.c -o CMP_benchmark -lm && \
+    gcc -I Hash_table Benchmark/Benchmark_HT.c Hash_table/Hash.c -o HT_benchmark -lm && \
+    gcc -I LSM_tree Benchmark/Benchmark_LSM.c LSM_tree/Lsm.c -o LSM_benchmark -lm && \
+    gcc -I Lista_Encadeada Benchmark/Benchmark_LT.c Lista_Encadeada/List.c -o LT_benchmark -lm && \
+    gcc -I Trie Benchmark/Benchmark_TRIE.c Trie/Trie.c -o TRIE_benchmark -lm
 
 COPY run_all.sh .
 
