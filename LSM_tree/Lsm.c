@@ -154,9 +154,9 @@ void buscar_intervalo_lsm(const char *inicio_str, const char *fim_str, char **sa
     while ((entry = readdir(dir)) != NULL) {
         if (strncmp(entry->d_name, "sstable_", 8) == 0 && strstr(entry->d_name, ".dat")) {
             // Montar o caminho completo do arquivo
-            char caminho[256];
-            printf(caminho);
+            char caminho[1024];
             snprintf(caminho, sizeof(caminho), "LSM_tree/%s", entry->d_name);
+            printf("%s\n", caminho);
 
             FILE *f = fopen(caminho, "rb");
             if (!f) continue;
