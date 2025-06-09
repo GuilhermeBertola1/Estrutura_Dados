@@ -62,7 +62,7 @@ void buscar_intervalo_list(const char *inicio_str, const char *fim_str, char **s
     long long inicio = datetime_para_inteiro_list(inicio_str);
     long long fim = datetime_para_inteiro_list(fim_str);
 
-    printf("Intervalo: %lld - %lld\n", inicio, fim);
+    //printf("Intervalo: %lld - %lld\n", inicio, fim);
 
     size_t capacidade = 8192;
     size_t usado = 0;
@@ -131,7 +131,7 @@ void buscar_intervalo_list(const char *inicio_str, const char *fim_str, char **s
 
     usado += snprintf(json + usado, capacidade - usado, "\n]");
     json[usado] = '\0';
-    printf("Itens encontrados: %d\n", contagem);
+    //printf("Itens encontrados: %d\n", contagem);
 
     *saida = json;
 }
