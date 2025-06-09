@@ -9,6 +9,7 @@
         "trie.h": "c",
         "lsm.h": "c",
         "time.h": "c",
-        "cch.h": "c"
+        "cch.h": "c",
+        "cmplist.h": "c"
     }
 }
