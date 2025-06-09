@@ -25,8 +25,8 @@ RUN gcc -I AVL Benchmark/Benchmark_AVL.c AVL/avl.c -o AVL_benchmark -lm && \
     gcc -I Lista_Encadeada Benchmark/Benchmark_LT.c Lista_Encadeada/List.c -o LT_benchmark -lm && \
     gcc -I Trie Benchmark/Benchmark_TRIE.c Trie/Trie.c -o TRIE_benchmark -lm
 
-COPY run_all.sh .
 
-RUN chmod +x run_all.sh
+COPY run_all.sh ./
+RUN dos2unix run_all.sh && chmod +x run_all.sh
 
-CMD ["./run_all.sh"]
+CMD ["sh", "./run_all.sh"]
