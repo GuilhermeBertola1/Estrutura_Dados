@@ -41,7 +41,7 @@ services:
     networks:
       - minha_rede
     cpus: 1.0
-    mem_limit: 550m
+    mem_limit: 750m
 
 networks:
   minha_rede:
