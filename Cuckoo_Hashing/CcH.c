@@ -153,7 +153,7 @@ void rehash(size_t novo_tamanho) {
 
 // Função principal de inserção, que chama rehash se necessário
 int inserirCuckoo(const Registro1 *r) {
-    printf("Inserindo: [%s]\n", r->data);
+    //printf("Inserindo: [%s]\n", r->data);
     if (existe_na_tabela(r->data)) {
         return 1;
     }
