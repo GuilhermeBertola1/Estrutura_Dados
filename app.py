@@ -45,8 +45,8 @@ if data_hora_inicio and data_hora_fim and data_hora_inicio > data_hora_fim:
 if st.button("🔄 Requisitar dados por intervalo"):
     st.write("🔌 Conectando ao servidor ZeroMQ...")
     context = zmq.Context()
-    socket = context.socket(zmq.REQ)
-    #socket.connect("tcp://programa_c:5555")
+    #socket = context.socket(zmq.REQ)
+    socket.connect("tcp://programa_c:5555")
     socket.connect("tcp://localhost:5555")
 
     # Envia as strings formatadas no formato exato
