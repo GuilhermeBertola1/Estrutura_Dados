@@ -127,13 +127,46 @@ int main() {
             buffer[strcspn(buffer, "\r\n")] = 0;
 
             char data_inicio[32], data_fim[32];
-            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+            if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorRegistros vetor;
+                vetor_inicializar(&vetor, 1024);  // inicializa vetor antes do uso
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCampos est = calcular_estatisticas(&vetor);
+                Medianas med = calcular_mediana(&vetor);
+                Modas moda = calcular_moda(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar(&vetor);
+                    continue;
+                }
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberar(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -213,13 +246,46 @@ int main() {
             buffer[strcspn(buffer, "\r\n")] = 0;
 
             char data_inicio[32], data_fim[32];
-            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+            if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorEletricDates vetor;
+                vetor_inicializarList(&vetor, 1024);
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_list(data_inicio, data_fim, &resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_list(data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCamposList est = calcular_estatisticasList(&vetor);
+                MedianasList med = calcular_mediana_list(&vetor);
+                ModasList moda = calcular_moda_list(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo_list(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberarList(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberarList(&vetor);
+                    continue;
+                }
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberarList(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -300,11 +366,46 @@ int main() {
             char data_inicio[32], data_fim[32];
             if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorEntrada vetor;
+                vetor_inicializar_HT(&vetor, 1024);
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_linear(data_inicio, data_fim, &resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_HT(data_inicio, data_fim, &resposta_json, &vetor);
+                EstatisticasCamposHT est = calcular_estatisticas_HT(&vetor);
+                MedianasHT med = calcular_mediana_HT(&vetor);
+                ModasHT moda = calcular_moda_HT(&vetor);
+                
+                char *json_estatisticas = estatisticas_para_json_conteudo_HT(est, med, moda);
+                
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_HT(&vetor);
+                    continue;
+                }
+
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+
+                 fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_HT(&vetor);
+                    continue;
+                }
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberar_HT(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -313,6 +414,7 @@ int main() {
 
         zmq_close(responder);
         zmq_ctx_term(context);
+
         break;
         
     case 4:
@@ -386,11 +488,44 @@ int main() {
             char data_inicio[32], data_fim[32];
             if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorRegistro1 vetor;
+                vetor_inicializar_cc(&vetor, 1024);  // inicializa vetor antes do uso
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_cuckoo(data_inicio, data_fim, &resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_cuckoo(data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCamposCC est = calcular_estatisticas_cc(&vetor);
+                MedianasCC med = calcular_mediana_cc(&vetor);
+                ModasCC moda = calcular_moda_cc(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo_cc(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_cc(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_cc(&vetor);
+                    continue;
+                }
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberar_cc(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -399,6 +534,7 @@ int main() {
 
         zmq_close(responder);
         zmq_ctx_term(context);
+
         break;
     case 5:
         Trie* trie = criar_trie();
@@ -466,13 +602,49 @@ int main() {
             buffer[strcspn(buffer, "\r\n")] = 0;
 
             char data_inicio[32], data_fim[32];
+            printf(data_inicio);
+            printf(data_fim);
             if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorEntrada2 vetor;
+                vetor_inicializar_Trie(&vetor, 1024);
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_trie(trie, data_inicio, data_fim, &resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_trie(trie,data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCamposTrie est = calcular_estatisticas_Trie(&vetor);
+                MedianasTrie med = calcular_mediana_Trie(&vetor);
+                ModasTrie moda = calcular_moda_Trie(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo_Trie(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_Trie(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_Trie(&vetor);
+                    continue;
+                }
+
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberar_Trie(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -481,6 +653,7 @@ int main() {
 
         zmq_close(responder);
         zmq_ctx_term(context);
+
         break;
     case 6:
         char linha4[4096];    
@@ -553,11 +726,45 @@ int main() {
             printf(data_fim);
             if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorDados vetor;
+                vetor_inicializar_lsm(&vetor, 1024);
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_lsm(data_inicio, data_fim, &resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_lsm(data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCamposlsm est = calcular_estatisticas_lsm(&vetor);
+                Medianaslsm med = calcular_mediana_lsm(&vetor);
+                Modaslsm moda = calcular_moda_lsm(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo_lsm(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_lsm(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_lsm(&vetor);
+                    continue;
+                }
+
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberar_lsm(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -566,6 +773,7 @@ int main() {
 
         zmq_close(responder);
         zmq_ctx_term(context);
+
         break;
 
     case 7:
@@ -634,14 +842,46 @@ int main() {
             char data_inicio[32], data_fim[32];
             printf(data_inicio);
             printf(data_fim);
-            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+            if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorBdados vetor;
+                vetor_inicializar_BM(&vetor, 1024);  // inicializa vetor antes do uso
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_bplus_json(raizBM, data_inicio, data_fim, &resposta_json);
-                printf("JSON gerado:\n%s\n", resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_bplus_json(raizBM, data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCampos_BM est = calcular_estatisticas_BM(&vetor);
+                Medianas_BM med = calcular_mediana_BM(&vetor);
+                Modas_BM moda = calcular_moda_BM(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo_BM(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 50; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_BM(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberar_BM(&vetor);
+                    continue;
+                }
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberar_BM(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);
@@ -717,16 +957,46 @@ int main() {
             buffer[strcspn(buffer, "\r\n")] = 0;
 
             char data_inicio[32], data_fim[32];
-            printf(data_inicio);
-            printf(data_fim);
-            if (sscanf(buffer, "%31[^,],%127[^\n]", data_inicio, data_fim) == 2) {
+            if (sscanf(buffer, "%31[^,],%31[^\n]", data_inicio, data_fim) == 2) {
                 char *resposta_json;
+                VetorCompList vetor;
+                vetor_inicializarListC(&vetor, 1024);  // inicializa vetor antes do uso
                 printf(data_inicio);
                 printf(data_fim);
-                buscar_intervalo_lista_CMP(CmpLISTA, data_inicio, data_fim, &resposta_json);
-                printf("JSON gerado:\n%s\n", resposta_json);
-                zmq_send(responder, resposta_json, strlen(resposta_json), 0);
+                buscar_intervalo_lista_CMP(CmpLISTA, data_inicio, data_fim, &resposta_json, &vetor);
+
+                EstatisticasCamposListC est = calcular_estatisticasListC(&vetor);
+                MedianasListC med = calcular_mediana_listc(&vetor);
+                ModasListC moda = calcular_moda_listc(&vetor);
+
+                char *json_estatisticas = estatisticas_para_json_conteudo_listc(est, med, moda);
+
+                size_t tamanho = strlen(resposta_json) + strlen(json_estatisticas) + 1024; // mais folga para chaves e aspas
+                char *json_completo = malloc(tamanho);
+                if (!json_completo) {
+                    fprintf(stderr, "Erro ao alocar memória para resposta JSON\n");
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberarListC(&vetor);
+                    continue;
+                }
+
+                int len = snprintf(json_completo, tamanho, "{\"dados\":%s,\"estatisticas\":%s}", resposta_json, json_estatisticas);
+                if (len < 0 || (size_t)len >= tamanho) {
+                    fprintf(stderr, "Erro ao construir JSON completo\n");
+                    free(json_completo);
+                    free(resposta_json);
+                    free(json_estatisticas);
+                    vetor_liberarListC(&vetor);
+                    continue;
+                }
+
+                zmq_send(responder, json_completo, strlen(json_completo), 0);
+
+                free(json_completo);
                 free(resposta_json);
+                free(json_estatisticas);
+                vetor_liberarListC(&vetor);
             } else {
                 const char *msg_erro = "{\"erro\":\"formato inválido, envie 'data_inicio,data_fim'\"}";
                 zmq_send(responder, msg_erro, strlen(msg_erro), 0);

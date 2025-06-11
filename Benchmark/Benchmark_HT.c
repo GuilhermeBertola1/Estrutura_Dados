@@ -17,6 +17,8 @@ int main(){
 
     inicializarHash();
     char linha2[4096];
+    VetorEntrada vetor;
+    vetor_inicializar_HT(&vetor, 1023);
     fgets(linha2, sizeof(linha2), f);
     start = clock();
     while (fgets(linha2, sizeof(linha2), f)) {
@@ -74,6 +76,15 @@ int main(){
     buscar_intervalo_linear(data_inicio, data_fim, &resposta_json);
     end = clock();
     printf("Tempo busca Hashing table: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCamposHT est = calcular_estatisticas_HT(&vetor);
+    MedianasHT med = calcular_mediana_HT(&vetor);
+    ModasHT moda = calcular_moda_HT(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da Tabela Hash: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberar_HT(&vetor);
     liberarHashLinear();
 }

@@ -17,6 +17,8 @@ int main(){
 
     Trie* trie = criar_trie();
     char linha20[4096];
+    VetorEntrada2 vetor;
+    vetor_inicializar_Trie(&vetor, 1024);
     fgets(linha20, sizeof(linha20), f);
     start = clock();
     while (fgets(linha20, sizeof(linha20), f)) {
@@ -74,6 +76,15 @@ int main(){
     buscar_intervalo_trie(trie, data_inicio, data_fim, &resposta_json);
     end = clock();
     printf("Tempo busca Trie: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCamposTrie est = calcular_estatisticas_Trie(&vetor);
+    MedianasTrie med = pegar_mediana_Trie(&vetor);
+    ModasTrie moda = pegar_moda_Trie(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da AVL: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberar_Trie(&vetor);
     destruir_trie(trie);
 }

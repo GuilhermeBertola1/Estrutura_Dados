@@ -16,6 +16,8 @@ int main(){
     clock_t start, end;
 
     char linha3[4096];
+    VetorEletricDates vetor;
+    vetor_inicializarList(&vetor, 1024);
     fgets(linha3, sizeof(linha3), f);
     start = clock();
     while (fgets(linha3, sizeof(linha3), f)) {
@@ -72,9 +74,18 @@ int main(){
     printf("Tempo insercao Lista encadeada: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo_list(data_inicio, data_fim, &resposta_json);
+    buscar_intervalo_list(data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca Lista encadeada: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasSimplesList est = calcular_estatisticasList(&vetor);
+    MedianasList med = calcular_mediana_list(&vetor);
+    ModasList moda = calcular_moda_list(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da Lista encadeada: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberarList(vetor);
     liberar_lista(&lista_ligada);
 }

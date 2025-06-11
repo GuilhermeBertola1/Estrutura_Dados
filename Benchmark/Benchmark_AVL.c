@@ -16,6 +16,8 @@ int main(){
     clock_t start, end;
     char linha[4096];
     Node *raiz = NULL;
+    VetorRegistros vetor;
+    vetor_inicializar(&vetor, 1024);
     fgets(linha, sizeof(linha), f);
 
     start = clock();
@@ -70,9 +72,18 @@ int main(){
     printf("Tempo insercao AVL: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json);
+    buscar_intervalo(raiz, data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca AVL: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCampos est = calcular_estatisticas(&vetor);
+    Medianas med = calcular_mediana(&vetor);
+    Modas moda = calcular_moda(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da AVL: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberar(&vetor);
     liberar_avl(raiz);
 }

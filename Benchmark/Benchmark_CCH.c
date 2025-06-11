@@ -17,7 +17,10 @@ int main(){
 
     inicializarCuckoo(2053);
     char linha1[4096];
+    VetorRegistro1 vetor;
+    vetor_inicializar_cc(&vetor, 1024);
     fgets(linha1, sizeof(linha1), f);
+    
     start = clock();
     while (fgets(linha1, sizeof(linha1), f)) {
         Registro1 r1;
@@ -71,9 +74,18 @@ int main(){
     printf("Tempo insercao Cuckoo Hashing: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo_cuckoo(data_inicio, data_fim, &resposta_json);
+    buscar_intervalo_cuckoo(data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca Cuckoo Hashing: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCamposCC est = calcular_estatisticas_cc(&vetor);
+    MedianasCC med = calcular_mediana_cc(&vetor);
+    ModasCC moda = calcular_moda_cc(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da Cuckoo hashing: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberar_cc(&vetor);
     liberarCuckoo();
 }

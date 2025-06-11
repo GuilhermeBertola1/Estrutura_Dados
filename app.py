@@ -46,8 +46,8 @@ if st.button("🔄 Requisitar dados por intervalo"):
     st.write("🔌 Conectando ao servidor ZeroMQ...")
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
-    socket.connect("tcp://programa_c:5555")
-    #socket.connect("tcp://localhost:5555")
+    #socket.connect("tcp://programa_c:5555")
+    socket.connect("tcp://localhost:5555")
 
     # Envia as strings formatadas no formato exato
     msg = f"{data_hora_inicio.strftime('%Y-%m-%d %I:00:00 %p')},{data_hora_fim.strftime('%Y-%m-%d %I:00:00 %p')}"
@@ -56,16 +56,30 @@ if st.button("🔄 Requisitar dados por intervalo"):
     socket.send_string(msg)
 
     resposta = socket.recv().decode()
+    print(resposta)
     try:
         dados = json.loads(resposta)
-        if isinstance(dados, list):
-            st.session_state["dados"] = dados
-            print(st.session_state["dados"])
-            st.success("✅ Dados recebidos com sucesso.")
+        if isinstance(dados, dict) and "dados" in dados:
+            registros = dados["dados"]
+            estatisticas = dados.get("estatisticas", None)
+        elif isinstance(dados, list):
+            registros = dados
+            estatisticas = None
         else:
             st.error("❌ Formato de resposta inválido.")
+            st.stop()  # Interrompe aqui com segurança
+
+        if not registros:
+            st.warning("⚠️ Nenhum dado encontrado no intervalo selecionado.")
+        else:
+            st.success("✅ Dados recebidos com sucesso.")
+
+        st.session_state["dados"] = registros
+        st.session_state["estatisticas"] = estatisticas
+
     except json.JSONDecodeError:
         st.error(f"❌ Erro ao decodificar JSON: {resposta}")
+        st.stop()  # Também útil aqui
 
     socket.close()
     context.term()
@@ -117,7 +131,7 @@ if st.session_state["dados"]:
             "variancia": "Variância",
             "desvio_padrao": "Desvio Padrão"
         }, inplace=True)
-        st.write("📊 Estatísticas descritivas (fornecidas pelo servidor):")
+        st.write("📊 Estatísticas descritivas:")
         st.dataframe(df_estats)
 
     # Caixa para predição

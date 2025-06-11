@@ -16,7 +16,9 @@ int main(){
     clock_t start, end;
     
     char linha10[4096];
-    BPlusNode *raizBM = NULL; 
+    BPlusNode *raizBM = NULL;
+    VetorBdados vetor;
+    vetor_inicializar_BM(&vetor, 1024);
     fgets(linha10, sizeof(linha10), f);
 
     start = clock();
@@ -69,9 +71,18 @@ int main(){
     printf("Tempo insercao B+ tree: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo_bplus_json(raizBM, data_inicio, data_fim, &resposta_json);
+    buscar_intervalo_bplus_json(raizBM, data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca B+ tree: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCampos_BM est = calcular_estatisticas_BM(&vetor);
+    Medianas_BM med = calcular_mediana_BM(&vetor);
+    Modas_BM moda = calcular_moda_BM(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da B+ Tree: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberar_BM(&vetor);
     liberar_bplus(raizBM);
 }

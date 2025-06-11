@@ -18,6 +18,8 @@ int main(){
     Bloco* CmpLISTA = NULL;
     CmpLISTA = criar_bloco();
     char linha90[4096];
+    VetorCompList vetor;
+    vetor_inicializarListC(&vetor, 1024);
     fgets(linha90, sizeof(linha90), f);
     start = clock();
     while (fgets(linha90, sizeof(linha90), f)) {
@@ -70,9 +72,18 @@ int main(){
     printf("Tempo insercao Compact List: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo_lista_CMP(CmpLISTA, data_inicio, data_fim, &resposta_json);
+    buscar_intervalo_lista_CMP(CmpLISTA, data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca Compact List: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCamposListC est = calcular_estatisticasListC(&vetor);
+    MedianasListC med = calcular_mediana_listc(&vetor);
+    ModasListC moda = calcular_moda_listc(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da lista compacta encadeada: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
     free(resposta_json);
+    vetor_liberarListC(&vetor);
     liberar_lista_CMP(CmpLISTA);
 }

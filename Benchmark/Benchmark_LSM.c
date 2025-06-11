@@ -16,6 +16,8 @@ int main(){
     clock_t start, end;
 
     char linha4[4096];    
+    VetorDados vetor;
+    vetor_inicializar_lsm(&vetor, 1024);
     fgets(linha4, sizeof(linha4), f);
     start = clock();
     while (fgets(linha4, sizeof(linha4), f)) {
@@ -73,5 +75,14 @@ int main(){
     buscar_intervalo_lsm(data_inicio, data_fim, &resposta_json);
     end = clock();
     printf("Tempo busca LSM Tree: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    start = clock();
+    EstatisticasCamposlsm est = calcular_estatisticas_lsm(&vetor);
+    Medianaslsm med = calcular_mediana_lsm(&vetor);
+    Modaslsm moda = calcular_moda_lsm(&vetor);
+    end = clock();
+    printf("Tempo de calculo estatistico da LSM tree: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+
+    vetor_liberar_lsm(&vetor);
     free(resposta_json);
 }
