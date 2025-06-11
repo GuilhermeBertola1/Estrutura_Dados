@@ -79,7 +79,7 @@ int main(){
     printf("Tempo busca Lista encadeada: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    EstatisticasSimplesList est = calcular_estatisticasList(&vetor);
+    EstatisticasCamposList est = calcular_estatisticasList(&vetor);
     MedianasList med = calcular_mediana_list(&vetor);
     ModasList moda = calcular_moda_list(&vetor);
     end = clock();
