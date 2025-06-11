@@ -73,7 +73,7 @@ int main(){
     printf("Tempo insercao Hashing table: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo_linear(data_inicio, data_fim, &resposta_json);
+    buscar_intervalo_HT(data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca Hashing table: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 

@@ -86,6 +86,6 @@ int main(){
     printf("Tempo de calculo estatistico da Lista encadeada: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     free(resposta_json);
-    vetor_liberarList(vetor);
+    vetor_liberarList(&vetor);
     liberar_lista(&lista_ligada);
 }

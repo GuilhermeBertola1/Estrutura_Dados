@@ -85,7 +85,7 @@ void vetor_liberarList (VetorEletricDates *v);
 void buscar_intervalo_list(const char *inicio_str, const char *fim_str, char **saida, VetorEletricDates *vetor);
 void imprimir_lista(NodeList* no);
 void liberar_lista(NodeList** head);
-EstatisticasCamposList calcular_estatisticasList (VetorEletricDates *v);
+EstatisticasCamposList calcular_estatisticasList(VetorEletricDates *v);
 int comparador_double_list(const void *a, const void *b);
 static double pegar_mediana_list(double *arr, size_t n);
 static int doubles_iguais_list(double a, double b);

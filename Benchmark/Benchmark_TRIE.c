@@ -73,14 +73,14 @@ int main(){
     printf("Tempo insercao Trie: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
-    buscar_intervalo_trie(trie, data_inicio, data_fim, &resposta_json);
+    buscar_intervalo_trie(trie, data_inicio, data_fim, &resposta_json, &vetor);
     end = clock();
     printf("Tempo busca Trie: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     start = clock();
     EstatisticasCamposTrie est = calcular_estatisticas_Trie(&vetor);
-    MedianasTrie med = pegar_mediana_Trie(&vetor);
-    ModasTrie moda = pegar_moda_Trie(&vetor);
+    MedianasTrie med = calcular_mediana_Trie(&vetor);
+    ModasTrie moda = calcular_moda_Trie(&vetor);
     end = clock();
     printf("Tempo de calculo estatistico da AVL: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
