@@ -82,7 +82,7 @@ int main(){
     MedianasTrie med = calcular_mediana_Trie(&vetor);
     ModasTrie moda = calcular_moda_Trie(&vetor);
     end = clock();
-    printf("Tempo de calculo estatistico da AVL: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
+    printf("Tempo de calculo estatistico da TRIE: %f s\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     free(resposta_json);
     vetor_liberar_Trie(&vetor);
